@@ -3,3 +3,4 @@ remoteApi.dll
 *.pyc
 launch.json
 .vscode
+.virt

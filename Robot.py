@@ -15,6 +15,11 @@ class Robot:
         self.lastEncoder = [0] * 2
         self.sonarReading = [None] * NUM_SONARS
 
+        # Position
+        self.position = [0] * 3
+        self.lastPosition = [0] * 3
+        self.orientation = [0] * 3
+
         # Handles
         self.handle = self.sim.getHandle(self.name)
         self.encoderHandle = [None] * 2

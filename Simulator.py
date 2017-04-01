@@ -49,23 +49,36 @@ class Simulator:
     @connected
     def readProximitySensor(self, handle):
         """
-        :return: returnCode, detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector
+        :return: detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector
         """
-        return vrep.simxReadProximitySensor(self.id, handle, vrep.simx_opmode_buffer )
+        retcode, *ret = vrep.simxReadProximitySensor(self.id, handle, vrep.simx_opmode_buffer)
+        self.__assertSimxSuccessRet(retcode)
+        return ret
         
     @connected
     def getObjectPosition(self, handle):
-        return vrep.simxGetObjectPosition(self.id, handle, -1, vrep.simx_opmode_streaming)
+        retcode, ret = vrep.simxGetObjectPosition(self.id, handle, -1, vrep.simx_opmode_streaming)
+        self.__assertSimxSuccessRet(retcode)
+        return ret
     
     @connected
     def getObjectOrientation(self, handle):
-        return vrep.simxGetObjectOrientation(self.id, handle, -1, vrep.simx_opmode_streaming)
+        retcode, ret = vrep.simxGetObjectOrientation(self.id, handle, -1, vrep.simx_opmode_streaming)
+        self.__assertSimxSuccessRet(retcode)
+        return ret
     
     @connected
     def getJointPosition(self, handle):
-        return vrep.simxGetObjectPosition(self.id, handle, vrep.simx_opmode_streaming)
+        retcode, ret = vrep.simxGetJointPosition(self.id, handle, vrep.simx_opmode_streaming)
+        self.__assertSimxSuccessRet(retcode)
+        return ret
 
     @connected
     def setJointTargetVelocity(self, handle, velocity):
-        return vrep.simxSetJointTargetVelocity(self.id, handle, velocity, vrep.simx_opmode_streaming)
+        retcode, ret = vrep.simxSetJointTargetVelocity(self.id, handle, velocity, vrep.simx_opmode_streaming)
+        self.__assertSimxSuccessRet(retcode)
+        return ret
     
+    def __assertSimxSuccessRet(self, simxRet):
+        if simxRet != vrep.simx_return_ok and simxRet != vrep.simx_return_novalue_flag:
+            raise Exception("Error in Remote API return: {}".format(simxRet))

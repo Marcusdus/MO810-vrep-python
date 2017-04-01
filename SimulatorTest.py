@@ -41,6 +41,10 @@ class SimulatorTests(unittest.TestCase):
         self.assertIsNotNone(leftMotor)
         self.assertIsNotNone(rightMotor)
 
+    def testGetPosition(self):
+        handle = self.sim.getHandle("Pioneer_p3dx")
+        pos = self.sim.getObjectPosition(handle)
+        print("Pos {}".format(pos))
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,0 +1,5 @@
+.pylintrc
+remoteApi.dll
+*.pyc
+launch.json
+.vscode

@@ -19,6 +19,7 @@ class Robot:
         self.position = [0] * 3
         self.lastPosition = [0] * 3
         self.orientation = [0] * 3
+        self.lastOrientation = [0] * 3
 
         # Handles
         self.handle = self.sim.getHandle(self.name)
@@ -64,7 +65,8 @@ class Robot:
 
     def updatePose(self):
         self.lastPosition = self.position[:]
-        
+        self.lastOrientation = self.orientation
+
         self.position = self.sim.getObjectPosition(self.handle)
         self.orientation = self.sim.getObjectOrientation(self.handle)
 
@@ -91,3 +93,4 @@ class Robot:
 
     def drive(self, vLinear, vAngular):
         self.move(self.__vLToDrive(vLinear, vAngular), self.__vRToDrive(vLinear, vAngular))    
+        

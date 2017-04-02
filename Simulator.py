@@ -51,7 +51,8 @@ class Simulator:
         """
         :return: detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector
         """
-        retcode, *ret = vrep.simxReadProximitySensor(self.id, handle, vrep.simx_opmode_buffer)
+        # Note: luisa - could not make it work with simx_opmode_buffer
+        retcode, *ret = vrep.simxReadProximitySensor(self.id, handle, vrep.simx_opmode_streaming)
         self.__assertSimxSuccessRet(retcode)
         return ret
         

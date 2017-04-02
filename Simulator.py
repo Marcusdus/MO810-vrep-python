@@ -75,9 +75,8 @@ class Simulator:
 
     @connected
     def setJointTargetVelocity(self, handle, velocity):
-        retcode, ret = vrep.simxSetJointTargetVelocity(self.id, handle, velocity, vrep.simx_opmode_streaming)
+        retcode = vrep.simxSetJointTargetVelocity(self.id, handle, velocity, vrep.simx_opmode_streaming)
         self.__assertSimxSuccessRet(retcode)
-        return ret
     
     def __assertSimxSuccessRet(self, simxRet):
         if simxRet != vrep.simx_return_ok and simxRet != vrep.simx_return_novalue_flag:

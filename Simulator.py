@@ -1,10 +1,12 @@
 import vrep
+from functools import wraps
 
 def connected(func):
     """
     Decorator to Simulator methods. 
     Use it when the precondition to the method is a valid connection. 
     """
+    @wraps(func)
     def function_wrapper(*args, **kwargs):
         if not args[0].isConnected:
             raise Exception("Not connected")

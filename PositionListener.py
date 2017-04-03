@@ -1,5 +1,5 @@
 import abc
-from vrepUtil import convertEulerToDegrees
+import math
 
 class IPositionListener(object, metaclass=abc.ABCMeta):
     """
@@ -13,6 +13,5 @@ class IPositionListener(object, metaclass=abc.ABCMeta):
 class PrinterPositionListerner(IPositionListener):
     def newPosition(self, coord, orientation ):
         print("{0:.2f},{0:.2f}".format(coord[0], coord[1]))
-        # The correct angle is in ang[0]
-        print("ang: {}".format(convertEulerToDegrees(orientation)))
+        print("ang: {}".format(math.degrees(orientation[2])))
 

@@ -25,7 +25,7 @@ class DynamicPlot(IPositionListener, IObjectDetectionListener):
         self.pos_x.append(coord[0])
         self.pos_y.append(coord[1])
         self.lastX, self.lastY = coord[0], coord[1]
-        self.lastAngle = math.degrees(orientation[2])       
+        self.lastAngle = orientation[2]
 
     def objectDetected(self, detectedObjs: List[DetectedObject] ):
         for d in detectedObjs:

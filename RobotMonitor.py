@@ -5,6 +5,7 @@ from PositionListener import IPositionListener
 from time import sleep
 import threading
 from typing import List
+import math
 
 
 class RobotMonitor(threading.Thread):
@@ -31,7 +32,7 @@ class RobotMonitor(threading.Thread):
         # 4: 10
         # 5: -10
         # ...
-        angles = [90, 50, 30, 10, -10, -30, -50, -90]
+        angles = [math.radians(x) for x in [90, 50, 30, 10, -10, -30, -50, -90]]
         detectedObjs = []
         for i in range(0,8):
             if self.robot.sonarReading[i] != -1:

@@ -19,8 +19,8 @@ class RobotMonitor(threading.Thread):
     def run(self):
         while not self.stopEvent.is_set():
             self.robot.update()
+            self.readPosition()   
             self.readSonarReadings()  
-            self.readPosition()    
             sleep(self.intervalSeconds)
 
     def readSonarReadings(self):
@@ -35,7 +35,7 @@ class RobotMonitor(threading.Thread):
         detectedObjs = []
         for i in range(0,8):
             if self.robot.sonarReading[i] != -1:
-                detectedObjs.append(DetectedObject(self.robot.sonarReading[i], angles[i]))
+                detectedObjs.append(DetectedObject(self.robot.sonarReading[i], angles[i], i))
 
         self.__frontObjectDetected(detectedObjs)
 

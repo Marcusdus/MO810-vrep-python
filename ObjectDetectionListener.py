@@ -2,9 +2,10 @@ import abc
 from typing import List
 
 class DetectedObject:
-    def __init__(self, dist, angle):
+    def __init__(self, dist, angle, sensorIndex):
         self.dist = dist
         self.angle = angle
+        self.sensorIndex = sensorIndex
 
 
 class IObjectDetectionListener(object, metaclass=abc.ABCMeta):

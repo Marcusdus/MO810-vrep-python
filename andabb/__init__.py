@@ -2,9 +2,9 @@ import andabb.Main
 import andabb.plotrobot
 
 def main():
-    print("Test") 
+    print("Starting andaBB ...") 
     andabb.Main.main()  
 
 def graph():
-    print("Starting graph...")
+    print("Starting graph ...")
     andabb.plotrobot.main() 

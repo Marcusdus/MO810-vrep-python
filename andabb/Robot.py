@@ -1,5 +1,5 @@
 
-from Simulator import Simulator
+from andabb.Simulator import Simulator
 
 NUM_SONARS = 16
 WHEELS_DIST = 0.381

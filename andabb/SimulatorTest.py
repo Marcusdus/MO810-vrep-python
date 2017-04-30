@@ -1,5 +1,5 @@
 import unittest
-from Simulator import Simulator
+from andabb.Simulator import Simulator
 
 LEFT_ENCODER = "Pioneer_p3dx_leftWheel"
 RIGHT_ENCODER = "Pioneer_p3dx_rightWheel"

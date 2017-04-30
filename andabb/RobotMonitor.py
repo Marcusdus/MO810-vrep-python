@@ -1,7 +1,7 @@
-from Robot import Robot
-from ObjectDetectionListener import IObjectDetectionListener
-from ObjectDetectionListener import DetectedObject
-from PositionListener import IPositionListener
+from andabb.Robot import Robot
+from andabb.ObjectDetectionListener import IObjectDetectionListener
+from andabb.ObjectDetectionListener import DetectedObject
+from andabb.PositionListener import IPositionListener
 from time import sleep
 import threading
 from typing import List

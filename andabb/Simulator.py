@@ -1,4 +1,4 @@
-import vrep
+import vrep.vrep as vrep
 from functools import wraps
 
 def connected(func):

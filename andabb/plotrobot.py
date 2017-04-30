@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-from Robot import Robot
-from Robot import WHEELS_RAD
-from ObjectDetectionListener import IObjectDetectionListener
-from PositionListener import IPositionListener
-from ObjectDetectionListener import DetectedObject
-from RobotMonitor import RobotMonitor
+from andabb.Robot import Robot
+from andabb.Robot import WHEELS_RAD
+from andabb.ObjectDetectionListener import IObjectDetectionListener
+from andabb.PositionListener import IPositionListener
+from andabb.ObjectDetectionListener import DetectedObject
+from andabb.RobotMonitor import RobotMonitor
 from typing import List
 import math
 import threading
@@ -107,9 +107,8 @@ def plotRobot(robot: Robot, intervalMs=500):
     # To save the animation, use the command: line_ani.save('lines.mp4')
     plt.show()
 
-
-if __name__ == '__main__':
-    from Simulator import Simulator
+def main():
+    from andabb.Simulator import Simulator
     
     sim = Simulator()
     sim.connect()

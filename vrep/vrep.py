@@ -30,19 +30,19 @@ import platform
 import struct
 import sys
 import ctypes as ct
-from vrepConst import *
+from vrep.vrepConst import *
 
 #load library
 libsimx = None
 try:
     if platform.system() =='cli':
-        libsimx = ct.CDLL("./remoteApi.dll")
+        libsimx = ct.CDLL("remoteApi.dll")
     elif platform.system() =='Windows':
-        libsimx = ct.CDLL("./remoteApi.dll") 
+        libsimx = ct.CDLL("remoteApi.dll") 
     elif platform.system() == 'Darwin':
-        libsimx = ct.CDLL("./remoteApi.dylib")
+        libsimx = ct.CDLL("remoteApi.dylib")
     else:
-        libsimx = ct.CDLL("./remoteApi.so")
+        libsimx = ct.CDLL("remoteApi.so")
 except:
     print ('----------------------------------------------------')
     print ('The remoteApi library could not be loaded. Make sure')

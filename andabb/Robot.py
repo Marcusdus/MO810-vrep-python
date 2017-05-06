@@ -1,6 +1,6 @@
-from andabb.Simulator import Simulator
-from .PoseUpdater import IPoseUpdater
+from .Simulator import Simulator
 from .PoseUpdater import GroundTruthPoseUpdater
+from .PoseUpdater import IPoseUpdater
 from .PoseUpdater import Pose
 
 NUM_SONARS = 16

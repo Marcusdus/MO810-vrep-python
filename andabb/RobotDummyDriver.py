@@ -1,24 +1,25 @@
-from andabb.PositionListener import IPositionListener
-from andabb.ObjectDetectionListener import IObjectDetectionListener
-from andabb.ObjectDetectionListener import DetectedObject
-from andabb.Robot import Robot
-from typing import List
-from enum import Enum
-import math
-import threading
-from time import sleep
-import copy
 import random
+import threading
+from enum import Enum
+from time import sleep
+from typing import List
+
+from .ObjectDetectionListener import DetectedObject
+from .ObjectDetectionListener import IObjectDetectionListener
+from .Robot import Robot
+
 
 class DrivingState(Enum):
     STRAIGHT = 0
     LEFT_TURN = 1
+
 
 class RobotDummyDriver(threading.Thread, IObjectDetectionListener):
     '''
     This is a pretty dummy driver: everytime it detects an
     object (front sensors) the robot turns to the left (random)
     '''
+
     def __init__(self, robot: Robot, stopEvent: threading.Event):
         threading.Thread.__init__(self)
         self.robot = robot
@@ -26,7 +27,6 @@ class RobotDummyDriver(threading.Thread, IObjectDetectionListener):
         self.stopEvent = stopEvent
         self.detectedObject = None
         random.seed(1)
-    
 
     def objectDetected(self, detectedObjs: List[DetectedObject]):
         for d in detectedObjs:
@@ -36,21 +36,21 @@ class RobotDummyDriver(threading.Thread, IObjectDetectionListener):
             if d.sensorIndex == 3 or d.sensorIndex == 4:
                 self.detectedObject = d
 
-    def __objectDetected(self, detectedObj : DetectedObject):
+    def __objectDetected(self, detectedObj: DetectedObject):
         self.turnLeft()
-            
+
     def run(self):
         self.driveStraight()
-        while not self.stopEvent.is_set():   
+        while not self.stopEvent.is_set():
             if self.detectedObject:
                 d = copy.copy(self.detectedObject)
                 self.detectedObject = None
-                self.__objectDetected(d) 
+                self.__objectDetected(d)
             sleep(0.01)
 
     def driveStraight(self):
         self.state = DrivingState.STRAIGHT
-        self.robot.drive(15,0)
+        self.robot.drive(15, 0)
 
     def turnLeft(self):
         self.robot.stop()

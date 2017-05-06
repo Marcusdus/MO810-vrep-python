@@ -1,4 +1,5 @@
 import abc
+
 from . import Robot
 
 
@@ -27,7 +28,6 @@ class IPoseUpdater(object, metaclass=abc.ABCMeta):
 
 
 class GroundTruthPoseUpdater(IPoseUpdater):
-
     def update(self, robot: Robot):
         position = robot.sim.getObjectPosition(robot.handle)
         orientation = robot.sim.getObjectOrientation(robot.handle)

@@ -26,6 +26,7 @@
 #
 # This file was automatically created for V-REP release V3.3.2 on August 29th 2016
 
+import os
 import platform
 import struct
 import sys
@@ -34,20 +35,31 @@ from vrep.vrepConst import *
 
 #load library
 libsimx = None
+
+if os.environ.get('VREP_LIB_PATH'):
+    libpath = os.environ['VREP_LIB_PATH'] + os.path.sep
+else:
+    libpath = ""
+
 try:
     if platform.system() =='cli':
-        libsimx = ct.CDLL("remoteApi.dll")
+        libpath += "remoteApi.dll"
     elif platform.system() =='Windows':
-        libsimx = ct.CDLL("remoteApi.dll") 
+        libpath += "remoteApi.dll"
     elif platform.system() == 'Darwin':
-        libsimx = ct.CDLL("remoteApi.dylib")
+        libpath += "remoteApi.dylib"
     else:
-        libsimx = ct.CDLL("remoteApi.so")
+        libpath += "remoteApi.so"
+
+    libsimx = ct.CDLL(libpath)
 except:
     print ('----------------------------------------------------')
-    print ('The remoteApi library could not be loaded. Make sure')
-    print ('it is located in the same folder as "vrep.py", or')
-    print ('appropriately adjust the file "vrep.py"')
+    print ('The remoteApi library could not be loaded.')
+    if os.environ.get('VREP_LIB_PATH'):
+        print ('Using path: ' + libpath)
+    print ('Make sure the lib is located in the default library path (like /usr/lib) or')
+    print ('appropriately set it with the environment variable VREP_LIB_PATH.')
+    print ('Example: VREP_LIB_PATH="C:/Program Files (x86)/V-REP3\V-REP_PRO_EDU/programming/remoteApiBindings/python/python" ')
     print ('----------------------------------------------------')
     print ('')
 

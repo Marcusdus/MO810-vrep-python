@@ -7,7 +7,7 @@ MO810/MC959 - 1s2017 - V-REP remote API Python project.
 
 This project can be installed with pip. It needs python 3.5 
 
-```
+```bash
 pip install projetobb/
 ```
 
@@ -24,7 +24,6 @@ pip install -e projetobb/
 
 ```
 
-
 ## Execute 
 Start V-REP and load the scene: scenes/p3dx.ttt. 
 ```bash
@@ -38,4 +37,11 @@ LD_LIBRARY_PATH=./ andabb
 # To execute only the graph
 LD_LIBRARY_PATH=./ andabb-graph
 
+```
+
+### Unit tests
+To run all the unit tests
+```bash
+cd projetobb/
+python -m unittest discover
 ```

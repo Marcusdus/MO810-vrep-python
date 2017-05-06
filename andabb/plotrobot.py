@@ -7,6 +7,8 @@ from andabb.ObjectDetectionListener import IObjectDetectionListener
 from andabb.PositionListener import IPositionListener
 from andabb.ObjectDetectionListener import DetectedObject
 from andabb.RobotMonitor import RobotMonitor
+from .PoseUpdater import GroundTruthPoseUpdater
+from .PoseUpdater import Pose
 from typing import List
 import math
 import threading
@@ -21,11 +23,11 @@ class DynamicPlot(IPositionListener, IObjectDetectionListener):
         self.lastY = 0
         self.lastAngle = 0
 
-    def newPosition(self, coord, orientation):
-        self.pos_x.append(coord[0])
-        self.pos_y.append(coord[1])
-        self.lastX, self.lastY = coord[0], coord[1]
-        self.lastAngle = orientation[2]
+    def newPosition(self, pose: Pose):
+        self.pos_x.append(pose.x)
+        self.pos_y.append(pose.y)
+        self.lastX, self.lastY = pose.x, pose.y
+        self.lastAngle = pose.orientation
 
     def objectDetected(self, detectedObjs: List[DetectedObject] ):
         for d in detectedObjs:
@@ -113,7 +115,9 @@ def main():
     sim = Simulator()
     sim.connect()
 
-    robot = Robot(sim, "Pioneer_p3dx")
+    poseUpdater = GroundTruthPoseUpdater()
+
+    robot = Robot(sim, "Pioneer_p3dx", poseUpdater)
     stopEvent = threading.Event()
     monitor = RobotMonitor(robot, stopEvent)
     monitor.start()

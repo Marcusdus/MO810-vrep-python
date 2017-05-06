@@ -41,9 +41,8 @@ class RobotMonitor(threading.Thread):
         self.__frontObjectDetected(detectedObjs)
 
     def readPosition(self):
-        if (self.robot.lastPosition != self.robot.position or 
-            self.robot.lastOrientation != self.robot.orientation):
-            self.__positionChanged(self.robot.position, self.robot.orientation)
+        if self.robot.lastPose != self.robot.pose:
+            self.__positionChanged(self.robot.pose)
 
     def subscribeToFrontObjectDetection(self, listener: IObjectDetectionListener ):
         self.frontObjDetecListeners.append(listener)
@@ -55,6 +54,6 @@ class RobotMonitor(threading.Thread):
         for l in self.frontObjDetecListeners:
             l.objectDetected(detectedObjs)
     
-    def __positionChanged(self, newPosition, newOrientation):
+    def __positionChanged(self, pose):
         for l in self.positionListeners:
-            l.newPosition(newPosition, newOrientation)
+            l.newPosition(pose)

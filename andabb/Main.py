@@ -7,6 +7,7 @@ import threading
 from andabb.ObjectDetectionListener import PrinterObjectDetectionListener
 from andabb.PositionListener import PrinterPositionListerner
 from andabb.RobotDummyDriver import RobotDummyDriver
+from .PoseUpdater import GroundTruthPoseUpdater
 
 def main():
     sim = Simulator()
@@ -14,7 +15,9 @@ def main():
 
     stopEvent = threading.Event()
 
-    robot = Robot(sim, "Pioneer_p3dx")
+    poseUpdater = GroundTruthPoseUpdater()
+
+    robot = Robot(sim, "Pioneer_p3dx", poseUpdater)
     monitor = RobotMonitor(robot, stopEvent)
 
     driver = RobotDummyDriver(robot, stopEvent)

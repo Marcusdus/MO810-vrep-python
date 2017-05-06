@@ -1,6 +1,6 @@
-.pylintrc
-remoteApi.dll
+**/.*
+!/.gitignore
 *.pyc
 launch.json
-.vscode
-.virt
+remoteApi.dll
+*.egg-info/

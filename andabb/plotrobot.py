@@ -13,6 +13,7 @@ from .Robot import Robot
 from .Robot import WHEELS_RAD
 from .RobotMonitor import RobotMonitor
 from .PoseUpdater import GroundTruthPoseUpdater
+from .PoseUpdater import OdometryPoseUpdater
 from .PoseUpdater import Pose
 
 
@@ -93,24 +94,30 @@ def plotRobotAndObjects(monitor: RobotMonitor, intervalMs=500):
     plt.show()
 
 
-def update_line(num, robot: Robot, hl):
-    robot.update()
-    pos = robot.position[0:2]
-    hl.set_xdata(np.append(hl.get_xdata(), pos[0]))
-    hl.set_ydata(np.append(hl.get_ydata(), pos[1]))
-    return hl,
+def update_line(num, robot: Robot, robotLine, gtLine):
+    robotLine.set_xdata(np.append(robotLine.get_xdata(), robot.pose.x))
+    robotLine.set_ydata(np.append(robotLine.get_ydata(), robot.pose.y))
+
+    gtLine.set_xdata(np.append(gtLine.get_xdata(), robot.gtPose.x))
+    gtLine.set_ydata(np.append(gtLine.get_ydata(), robot.gtPose.y))
+
+    return robotLine, gtLine,
 
 
 def plotRobot(robot: Robot, intervalMs=500):
     fig1 = plt.figure()
 
-    l, = plt.plot([], [], 'ro', markersize=1)
-    plt.xlim(-20, 20)
-    plt.ylim(-20, 20)
+    robotLine, = plt.plot([], [], 'ro', label='robot')
+    robotLine.set_markersize(1)
+    gtLine, = plt.plot([], [], 'bo', label='gt')
+    gtLine.set_markersize(1)
+
+    plt.xlim(-10, 10)
+    plt.ylim(-10, 10)
     plt.xlabel('x')
     plt.ylabel('y')
-    plt.title('test')
-    line_ani = animation.FuncAnimation(fig1, update_line, None, fargs=(robot, l),
+    plt.title('Odometry vs GT')
+    line_ani = animation.FuncAnimation(fig1, update_line, None, fargs=(robot, robotLine, gtLine),
                                        interval=intervalMs, blit=True, repeat=False)
 
     # To save the animation, use the command: line_ani.save('lines.mp4')
@@ -123,13 +130,14 @@ def main():
     sim = Simulator()
     sim.connect()
 
-    poseUpdater = GroundTruthPoseUpdater()
+    poseUpdater = OdometryPoseUpdater()
 
     robot = Robot(sim, "Pioneer_p3dx", poseUpdater)
     stopEvent = threading.Event()
     monitor = RobotMonitor(robot, stopEvent)
     monitor.start()
-    plotRobotAndObjects(monitor)
+    #plotRobotAndObjects(monitor)
+    plotRobot(robot)
     stopEvent.set()
     monitor.join()
     sim.disconnect()

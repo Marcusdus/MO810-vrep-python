@@ -81,6 +81,12 @@ class Simulator:
         return ret
 
     @connected
+    def getJointForce(self, handle):
+        retcode, ret = vrep.simxGetJointForce(self.id, handle, vrep.simx_opmode_streaming)
+        self.__assertSimxSuccessRet(retcode)
+        return ret
+
+    @connected
     def setJointTargetVelocity(self, handle, velocity):
         retcode = vrep.simxSetJointTargetVelocity(self.id, handle, velocity, vrep.simx_opmode_streaming)
         self.__assertSimxSuccessRet(retcode)

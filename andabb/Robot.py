@@ -68,11 +68,11 @@ class Robot:
         self.encoder[1] = self.sim.getJointPosition(self.motorHandle[1])
 
     def updatePose(self):
-        self.lastPose = self.pose
-        self.pose = self.poseUpdater.update(robot=self)
-
         self.gtLastPose = self.gtPose
         self.gtPose = self.gtPoseUpdater.update(robot=self)
+
+        self.lastPose = self.pose
+        self.pose = self.poseUpdater.update(robot=self)
 
     def update(self):
         self.updateSensors()

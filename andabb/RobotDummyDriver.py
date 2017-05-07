@@ -1,3 +1,4 @@
+import copy
 import random
 import threading
 from enum import Enum
@@ -50,11 +51,11 @@ class RobotDummyDriver(threading.Thread, IObjectDetectionListener):
 
     def driveStraight(self):
         self.state = DrivingState.STRAIGHT
-        self.robot.drive(15, 0)
+        self.robot.drive(1, 0)
 
     def turnLeft(self):
         self.robot.stop()
         self.state = DrivingState.LEFT_TURN
-        self.robot.drive(0, 25)
+        self.robot.drive(0, 1)
         sleep(random.random())
         self.driveStraight()

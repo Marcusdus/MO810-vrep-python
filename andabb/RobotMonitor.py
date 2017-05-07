@@ -5,25 +5,38 @@ from typing import List
 
 from .ObjectDetectionListener import DetectedObject
 from .ObjectDetectionListener import IObjectDetectionListener
+from .PoseUpdater import GroundTruthPoseUpdater
+from .PoseUpdater import IPoseUpdater
 from .PositionListener import IPositionListener
+from .Robot import Pose
 from .Robot import Robot
 
 
 class RobotMonitor(threading.Thread):
-    def __init__(self, robot: Robot, stopEvent: threading.Event, intervalMs=200):
+    def __init__(self, robot: Robot, poseUpdater: IPoseUpdater, stopEvent: threading.Event, intervalMs=200):
         threading.Thread.__init__(self)
         self.robot = robot
+        self.poseUpdater = poseUpdater
+        self.gtPoseUpdater = GroundTruthPoseUpdater()
         self.intervalSeconds = intervalMs / 1000
         self.stopEvent = stopEvent
         self.frontObjDetecListeners = []
         self.positionListeners = []
+        self.lastRobotPose = Pose()
 
     def run(self):
         while not self.stopEvent.is_set():
-            self.robot.update()
-            self.readPosition()
-            self.readSonarReadings()
+            self.update()
             sleep(self.intervalSeconds)
+
+    def update(self):
+        self.robot.updateSensors()
+        self.lastRobotPose = self.robot.pose
+        self.robot.gtPose = self.gtPoseUpdater.update(self.robot)
+        self.robot.pose = self.poseUpdater.update(self.robot)
+
+        self.readPosition()
+        self.readSonarReadings()
 
     def readSonarReadings(self):
         # FIXME: robot should know the position of each sonar
@@ -42,7 +55,7 @@ class RobotMonitor(threading.Thread):
         self.__frontObjectDetected(detectedObjs)
 
     def readPosition(self):
-        if self.robot.lastPose != self.robot.pose:
+        if self.lastRobotPose != self.robot.pose:
             self.__positionChanged(self.robot.pose)
 
     def subscribeToFrontObjectDetection(self, listener: IObjectDetectionListener):

@@ -6,15 +6,15 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
 
+import andabb.Robot as rb
 from .ObjectDetectionListener import DetectedObject
 from .ObjectDetectionListener import IObjectDetectionListener
+from .PoseUpdater import OdometryPoseUpdater
+from .PoseUpdater import Pose
 from .PositionListener import IPositionListener
 from .Robot import Robot
 from .Robot import WHEELS_RAD
 from .RobotMonitor import RobotMonitor
-from .PoseUpdater import GroundTruthPoseUpdater
-from .PoseUpdater import OdometryPoseUpdater
-from .PoseUpdater import Pose
 
 
 class DynamicPlot(IPositionListener, IObjectDetectionListener):
@@ -132,11 +132,11 @@ def main():
 
     poseUpdater = OdometryPoseUpdater()
 
-    robot = Robot(sim, "Pioneer_p3dx", poseUpdater)
+    robot = rb.newPioonerRobot(sim)
     stopEvent = threading.Event()
-    monitor = RobotMonitor(robot, stopEvent)
+    monitor = RobotMonitor(robot, poseUpdater, stopEvent)
     monitor.start()
-    #plotRobotAndObjects(monitor)
+    # plotRobotAndObjects(monitor)
     plotRobot(robot)
     stopEvent.set()
     monitor.join()

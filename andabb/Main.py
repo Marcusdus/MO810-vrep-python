@@ -1,7 +1,7 @@
 import threading
 
+import andabb.Robot as rb
 from .PoseUpdater import GroundTruthPoseUpdater
-from .Robot import Robot
 from .RobotDummyDriver import RobotDummyDriver
 from .RobotMonitor import RobotMonitor
 from .Simulator import Simulator
@@ -16,15 +16,14 @@ def main():
 
     poseUpdater = GroundTruthPoseUpdater()
 
-    robot = Robot(sim, "Pioneer_p3dx", poseUpdater)
-    monitor = RobotMonitor(robot, stopEvent)
-
+    robot = rb.newPioonerRobot(sim)
+    monitor = RobotMonitor(robot, poseUpdater, stopEvent)
     driver = RobotDummyDriver(robot, stopEvent)
 
     monitor.subscribeToFrontObjectDetection(driver)
 
-    driver.start()
     monitor.start()
+    driver.start()
 
     plotThread = threading.Thread(target=plotRobotAndObjects, args=(monitor,))
     plotThread.start()

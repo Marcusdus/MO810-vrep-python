@@ -1,30 +1,13 @@
 import abc
-from time import time
 from math import cos
-from math import sin
 from math import degrees
-from math import pi
+from math import sin
+from time import time
 
-from andabb.AngleUniverse import calculateDelta
 from andabb.AngleUniverse import addDelta
-
-WHEELS_DIST = 0.381
-WHEELS_RAD = 0.0975
-
-
-class Pose:
-    def __init__(self, x=0, y=0, orientation=0):
-        self.x = x
-        self.y = y
-        self.orientation = orientation
-
-    def isZero(self):
-        if self.x == 0 and self.y == 0 and self.orientation == 0:
-            return True
-        return False
-
-    def __str__(self):
-        return "[{:.2f}, {:.2f}, {:.3f} rad]".format(self.x, self.y, degrees(self.orientation))
+from .Robot import Pose
+from .Robot import Robot
+from .Wheel import WHEELS_DIST
 
 
 class IPoseUpdater(object, metaclass=abc.ABCMeta):
@@ -42,7 +25,7 @@ class IPoseUpdater(object, metaclass=abc.ABCMeta):
 
 
 class GroundTruthPoseUpdater(IPoseUpdater):
-    def update(self, robot):
+    def update(self, robot: Robot):
         position = robot.sim.getObjectPosition(robot.handle)
         orientation = robot.sim.getObjectOrientation(robot.handle)
         p = Pose(position[0], position[1], orientation[2])
@@ -55,54 +38,28 @@ class OdometryPoseUpdater(IPoseUpdater):
     def __init__(self):
         self.lastPose = Pose()
         self.lastTimestamp = time()
-        self.lastRightEncoder = 0
-        self.lastLeftEncoder = 0
-        self.leftWheelClockWise = False
-        self.rightWheelClockWise = False
         self.start = True
 
-    def update(self, robot):
+    def update(self, robot: Robot):
         now = time()
 
-        encoderLeft = robot.sim.getJointPosition(robot.motorHandle[0])
-        encoderRight = robot.sim.getJointPosition(robot.motorHandle[1])
-        forceLeft = robot.sim.getJointForce(robot.motorHandle[0])
-        forceRight = robot.sim.getJointForce(robot.motorHandle[1])
+        rWheel = robot.rWheel
+        lWheel = robot.lWheel
 
         if self.start:
             self.lastPose = robot.gtPose
             print("Start pose: {}".format(robot.gtPose))
             self.lastTimestamp = now
-            self.lastRightEncoder = encoderLeft
-            self.lastLeftEncoder = encoderRight
             self.start = self.lastPose.isZero()
 
             return self.lastPose
 
-        timeDelta = now - self.lastTimestamp
-        print("Encoder r {}, l {}, deltaT {}".format(degrees(encoderRight), degrees(encoderLeft), timeDelta))
-        #print("Force r {}, l {}".format(forceRight, forceLeft))
-
-        deltaEncoderRight = calculateDelta(self.lastRightEncoder, encoderRight, self.rightWheelClockWise)
-        deltaEncoderLeft = calculateDelta(self.lastLeftEncoder, encoderLeft,  self.leftWheelClockWise)
-        print("delta Encoder r {}, l {}".format(degrees(deltaEncoderRight), degrees(deltaEncoderLeft)))
-
-        # Hack: trying to check if the orientation of the spin changed
-        # FIXME needs verification
-        if deltaEncoderRight > pi:
-            deltaEncoderRight = (2*pi) - deltaEncoderRight
-            self.rightWheelClockWise = not self.rightWheelClockWise
-        if deltaEncoderLeft > pi:
-            deltaEncoderLeft = (2*pi) - deltaEncoderLeft
-            self.leftWheelClockWise = not self.leftWheelClockWise
-        print("delta Encoder r {}, l {}".format(degrees(deltaEncoderRight), degrees(deltaEncoderLeft)))
-
-        # TODO check this
-        vR = speed(deltaEncoderRight, timeDelta, not self.rightWheelClockWise)
-        vL = speed(deltaEncoderLeft, timeDelta, not self.leftWheelClockWise)
+        vR = rWheel.calculateSpeed()
+        vL = lWheel.calculateSpeed()
 
         print("vR {}, vL{}".format(vR, vL))
 
+        timeDelta = now - self.lastTimestamp
         deltaTheta = (vR - vL) * (timeDelta / WHEELS_DIST)
         deltaSpace = (vR + vL) * (timeDelta / 2)
 
@@ -114,14 +71,6 @@ class OdometryPoseUpdater(IPoseUpdater):
 
         self.lastTimestamp = now
         self.lastPose = Pose(x, y, theta)
-        self.lastRightEncoder = encoderRight
-        self.lastLeftEncoder = encoderLeft
 
         print("odometry {}".format(self.lastPose))
         return self.lastPose
-
-
-def speed(angDelta, timeDelta, forward: bool):
-    if forward:
-        return WHEELS_RAD * (angDelta / timeDelta)
-    return -(WHEELS_RAD * (angDelta / timeDelta))

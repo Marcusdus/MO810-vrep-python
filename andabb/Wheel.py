@@ -4,7 +4,6 @@ from time import time
 from andabb.AngleUniverse import calculateDelta
 from .Simulator import Simulator
 
-WHEELS_DIST = 0.381
 WHEELS_RAD = 0.0975
 
 
@@ -45,7 +44,7 @@ class Wheel:
         return delta
 
     def setSpeed(self, speed):
-        self.speed = speed
+        self.speed = speed * WHEELS_RAD
         self.sim.setJointTargetVelocity(self.motorHandle, speed)
 
         if self.speed > 0:

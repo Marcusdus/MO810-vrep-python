@@ -2,11 +2,10 @@ from math import degrees
 
 from .Simulator import Simulator
 from .Wheel import Wheel
+from .Wheel import WHEELS_RAD
 
 NUM_SONARS = 16
 WHEELS_DIST = 0.381
-WHEELS_RAD = 0.0975
-
 
 class Robot:
     def __init__(self, simulator: Simulator, name: str, lWheel: Wheel, rWheel: Wheel):
@@ -50,10 +49,10 @@ class Robot:
         self.rWheel.stop()
 
     def __vRToDrive(self, vLinear, vAngular):
-        return ((2 * vLinear) + (WHEELS_DIST * vAngular)) / (2 * WHEELS_RAD);
+        return (((2 * vLinear) + (WHEELS_DIST * vAngular)) / (2*WHEELS_RAD));
 
     def __vLToDrive(self, vLinear, vAngular):
-        return ((2 * vLinear) - (WHEELS_DIST * vAngular)) / (2 * WHEELS_RAD);
+        return (((2 * vLinear) - (WHEELS_DIST * vAngular)) / (2*WHEELS_RAD));
 
     def drive(self, vLinear, vAngular):
         self.lWheel.setSpeed(self.__vLToDrive(vLinear, vAngular))

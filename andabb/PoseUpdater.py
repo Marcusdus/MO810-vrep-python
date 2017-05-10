@@ -29,7 +29,7 @@ class GroundTruthPoseUpdater(IPoseUpdater):
         position = robot.sim.getObjectPosition(robot.handle)
         orientation = robot.sim.getObjectOrientation(robot.handle)
         p = Pose(position[0], position[1], orientation[2])
-        print("GT pose: {}".format(p))
+        #print("GT pose: {}".format(p))
 
         return Pose(position[0], position[1], orientation[2])
 

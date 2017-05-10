@@ -3,6 +3,7 @@ import threading
 from time import sleep
 from typing import List
 
+from .AvoidObstacle import FuzzyAvoidObstacle
 from .ObjectDetectionListener import DetectedObject
 from .ObjectDetectionListener import IObjectDetectionListener
 from .PoseUpdater import GroundTruthPoseUpdater
@@ -24,6 +25,8 @@ class RobotMonitor(threading.Thread):
         self.positionListeners = []
         self.lastRobotPose = Pose()
 
+        self.controller = FuzzyAvoidObstacle()
+
     def run(self):
         while not self.stopEvent.is_set():
             self.update()
@@ -36,7 +39,9 @@ class RobotMonitor(threading.Thread):
         self.robot.pose = self.poseUpdater.update(self.robot)
 
         self.readPosition()
-        self.readSonarReadings()
+        lspeed, aspeed = self.readSonarReadings()
+        print("Speed: {}, Ang:{} ".format(lspeed, aspeed))
+        self.robot.drive(lspeed, aspeed)
 
     def readSonarReadings(self):
         # FIXME: robot should know the position of each sonar
@@ -48,11 +53,16 @@ class RobotMonitor(threading.Thread):
         # ...
         angles = [math.radians(x) for x in [90, 50, 30, 10, -10, -30, -50, -90]]
         detectedObjs = []
+        sensorReadings = []
         for i in range(0, 8):
             if self.robot.sonarReading[i] != -1:
                 detectedObjs.append(DetectedObject(self.robot.sonarReading[i], angles[i], i))
+                sensorReadings.append(self.robot.sonarReading[i])
+            else:
+                sensorReadings.append(2.0)
 
         self.__frontObjectDetected(detectedObjs)
+        return self.controller.compute(sensorReadings)
 
     def readPosition(self):
         if self.lastRobotPose != self.robot.pose:

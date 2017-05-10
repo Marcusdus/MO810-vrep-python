@@ -17,13 +17,12 @@ def main():
     poseUpdater = GroundTruthPoseUpdater()
 
     robot = rb.newPioonerRobot(sim)
-    monitor = RobotMonitor(robot, poseUpdater, stopEvent)
-    driver = RobotDummyDriver(robot, stopEvent)
-
-    monitor.subscribeToFrontObjectDetection(driver)
+    monitor = RobotMonitor(robot, poseUpdater, stopEvent, 200)
+    #driver = RobotDummyDriver(robot, stopEvent)
+    #monitor.subscribeToFrontObjectDetection(driver)
 
     monitor.start()
-    driver.start()
+    #driver.start()
 
     plotThread = threading.Thread(target=plotRobotAndObjects, args=(monitor,))
     plotThread.start()
@@ -31,7 +30,7 @@ def main():
     try:
         while monitor.is_alive():
             monitor.join(timeout=1.0)
-            driver.join(timeout=1.0)
+            #driver.join(timeout=1.0)
     except (KeyboardInterrupt, SystemExit):
         stopEvent.set()
 

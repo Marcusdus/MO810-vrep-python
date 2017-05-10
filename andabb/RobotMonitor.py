@@ -43,8 +43,8 @@ class RobotMonitor(threading.Thread):
         # 0: 90
         # 1: 50
         # 2: 30
-        # 4: 10
-        # 5: -10
+        # 3: 10
+        # 4: -10
         # ...
         angles = [math.radians(x) for x in [90, 50, 30, 10, -10, -30, -50, -90]]
         detectedObjs = []

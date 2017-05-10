@@ -7,7 +7,7 @@ from time import time
 from andabb.AngleUniverse import addDelta
 from .Robot import Pose
 from .Robot import Robot
-from .Wheel import WHEELS_DIST
+from .Robot import WHEELS_DIST
 
 
 class IPoseUpdater(object, metaclass=abc.ABCMeta):

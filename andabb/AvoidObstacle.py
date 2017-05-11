@@ -15,9 +15,9 @@ def createSensorAtecendent(name: str):
 
 
 def createLinearSpeedConsequent():
-    speed = ctrl.Consequent(np.arange(-0.01, 0.3, 0.01), 'linearSpeed')
+    speed = ctrl.Consequent(np.arange(-0.1, 0.3, 0.01), 'linearSpeed')
+    speed['back'] = fuzz.trimf(speed.universe, [-0.1, -0.03, 0])
     speed['stop'] = fuzz.trimf(speed.universe, [-0.01, 0, 0.01])
-    speed['very slow'] = fuzz.trimf(speed.universe, [0.01, 0.03, 0.05])
     speed['slow'] = fuzz.trimf(speed.universe, [0.03, 0.09, 0.15])
     speed['fast'] = fuzz.trapmf(speed.universe, [0.1, 0.2, 0.3, 0.3])
     speed.defuzzify_method = 'centroid'
@@ -48,25 +48,25 @@ def createRules(frontSensors: List[ctrl.Antecedent],
 
         # Front sensors close
         ctrl.Rule(frontSensors[0]['close'] | frontSensors[1]['close'], linearSpeed['stop']),
-        ctrl.Rule(frontSensors[0]['close'] | frontSensors[1]['close'], angularSpeed['left']),
+        ctrl.Rule(frontSensors[0]['close'] | frontSensors[1]['close'], angularSpeed['sharpLeft']),
         #ctrl.Rule(frontSensors[0]['close'], angularSpeed['left']),
         #ctrl.Rule(frontSensors[1]['close'], angularSpeed['right']),
 
         # Front sensors very close
-        ctrl.Rule(frontSensors[0]['very close'] | frontSensors[1]['very close'], linearSpeed['stop']),
-        ctrl.Rule(frontSensors[0]['very close'] | frontSensors[1]['very close'], angularSpeed['left']),
+        ctrl.Rule(frontSensors[0]['very close'] | frontSensors[1]['very close'], linearSpeed['back']),
+        ctrl.Rule(frontSensors[0]['very close'] | frontSensors[1]['very close'], angularSpeed['sharpLeft']),
         # ctrl.Rule(frontSensors[0]['very close'], angularSpeed['left']),
         # ctrl.Rule(frontSensors[1]['very close'], angularSpeed['right']),
     ]
     for sensor in leftSensors:
-        rules.append(ctrl.Rule(sensor['close'], angularSpeed['right']))
+        rules.append(ctrl.Rule(sensor['close'], angularSpeed['sharpRight']))
         rules.append(ctrl.Rule(sensor['very close'], angularSpeed['verySharpRight']))
-        rules.append(ctrl.Rule(sensor['far'], angularSpeed['sharpLeft']))
+        rules.append(ctrl.Rule(sensor['far'], angularSpeed['left']))
 
     for sensor in rightSensors:
-        rules.append(ctrl.Rule(sensor['close'], angularSpeed['left']))
+        rules.append(ctrl.Rule(sensor['close'], angularSpeed['sharpLeft']))
         rules.append(ctrl.Rule(sensor['very close'], angularSpeed['verySharpLeft']))
-        rules.append(ctrl.Rule(sensor['far'], angularSpeed['sharpRight']))
+        rules.append(ctrl.Rule(sensor['far'], angularSpeed['right']))
 
     return rules
 

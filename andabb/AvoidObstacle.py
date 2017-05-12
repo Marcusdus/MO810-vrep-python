@@ -25,7 +25,7 @@ def createLinearSpeedConsequent():
 
 
 def createAngularSpeedConsequent():
-    angularSpeed = ctrl.Consequent(np.arange(-0.4, 0.41, 0.01), 'angularSpeed')
+    angularSpeed = ctrl.Consequent(np.arange(-0.5, 0.51, 0.01), 'angularSpeed')
     angularSpeed.automf(7, "quant", ["verySharpRight", "sharpRight", "right", "straight", "left", "sharpLeft", "verySharpLeft"])
     angularSpeed.defuzzify_method = 'mom'
     return angularSpeed
@@ -48,7 +48,7 @@ def createRules(frontSensors: List[ctrl.Antecedent],
 
         # Front sensors close
         ctrl.Rule(frontSensors[0]['close'] | frontSensors[1]['close'], linearSpeed['stop']),
-        ctrl.Rule(frontSensors[0]['close'] | frontSensors[1]['close'], angularSpeed['sharpLeft']),
+        ctrl.Rule(frontSensors[0]['close'] | frontSensors[1]['close'], angularSpeed['left']),
         #ctrl.Rule(frontSensors[0]['close'], angularSpeed['left']),
         #ctrl.Rule(frontSensors[1]['close'], angularSpeed['right']),
 

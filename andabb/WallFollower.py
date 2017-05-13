@@ -8,8 +8,8 @@ from skfuzzy import control as ctrl
 def createSensorAtecendent(name: str):
     sensor = ctrl.Antecedent(np.arange(0, 2.01, 0.01), name)
     sensor['very close'] = fuzz.trapmf(sensor.universe, [0, 0, 0.2, 0.3])
-    sensor['close'] = fuzz.trimf(sensor.universe, [0.2, 0.3, 0.5])
-    sensor['almost close'] = fuzz.trimf(sensor.universe, [0.4, 0.5, 0.6])
+    sensor['close'] = fuzz.trimf(sensor.universe, [0.25, 0.3, 0.35])
+    sensor['almost close'] = fuzz.trimf(sensor.universe, [0.3, 0.5, 0.6])
     sensor['in range'] = fuzz.trimf(sensor.universe, [0.5, 0.7, 0.9])
     sensor['far'] = fuzz.trapmf(sensor.universe, [0.8, 0.9, 2, 2])
     return sensor
@@ -59,51 +59,56 @@ def createRules(leftFrontSensor: ctrl.Antecedent,
                 angularSpeed: ctrl.Consequent):
     # FIXME add option follow left or right
     rules = [
+        #
+        # ctrl.Rule(deltaSide['stable'] & (~sideSensor['far'] & (leftFrontSensor['far'] | rightfrontSensor['far'])), angularSpeed['straight']),
+        # ctrl.Rule(deltaSide['stable'], linearSpeed['fast']),
 
-        ctrl.Rule(deltaSide['stable'] & (~sideSensor['far']), angularSpeed['straight']),
-        ctrl.Rule(deltaSide['stable'], linearSpeed['fast']),
-
-        ctrl.Rule(deltaSide['going far'] & (~sideSensor['far']), angularSpeed['left']),
-        ctrl.Rule(deltaSide['going far'] & (~sideSensor['far']), linearSpeed['slow']),
-
-        ctrl.Rule(deltaSide['going very far'] & (~sideSensor['far']), angularSpeed['sharpLeft']),
-        ctrl.Rule(deltaSide['going very far'] & (~sideSensor['far']), linearSpeed['stop']),
-
-        ctrl.Rule(deltaSide['getting near'] & (~sideSensor['far']), angularSpeed['right']),
-        ctrl.Rule(deltaSide['getting near'] & (~sideSensor['far']), linearSpeed['slow']),
-
-        ctrl.Rule(deltaSide['getting very near'] & (~sideSensor['far']), angularSpeed['sharpRight']),
-        ctrl.Rule(deltaSide['getting very near'] & (~sideSensor['far']), linearSpeed['stop']),
+        # ctrl.Rule(deltaSide['going far'] & (~sideSensor['far']), angularSpeed['left']),
+        # ctrl.Rule(deltaSide['going far'] & (~sideSensor['far']), linearSpeed['slow']),
+        #
+        # ctrl.Rule(deltaSide['going very far'] & (~sideSensor['far']), angularSpeed['sharpLeft']),
+        # ctrl.Rule(deltaSide['going very far'] & (~sideSensor['far']), linearSpeed['stop']),
+        #
+        # ctrl.Rule(deltaSide['getting near'] & (~sideSensor['far']), angularSpeed['right']),
+        # ctrl.Rule(deltaSide['getting near'] & (~sideSensor['far']), linearSpeed['slow']),
+        #
+        # ctrl.Rule(deltaSide['getting very near'] & (~sideSensor['far']), angularSpeed['sharpRight']),
+        # ctrl.Rule(deltaSide['getting very near'] & (~sideSensor['far']), linearSpeed['stop']),
 
         # Front sensors far
-         ctrl.Rule((leftFrontSensor['far'] | rightfrontSensor['far']) & (~sideSensor['far']), linearSpeed['fast']),
+        #ctrl.Rule((leftFrontSensor['far'] & rightfrontSensor['far']) & (~sideSensor['far']), linearSpeed['fast']),
         # ctrl.Rule(leftFrontSensor['far'] | rightfrontSensor['far'], angularSpeed['straight']),
 
+        # ctrl.Rule((leftFrontSensor['very close'] | leftFrontSensor['very close']) & (
+        # rightfrontSensor['far'] | rightfrontSensor['in range']), angularSpeed['verySharpRight']),
 
         # Front sensors within range
-        ctrl.Rule(leftFrontSensor['in range'] | rightfrontSensor['in range'], linearSpeed['slow']),
-        ctrl.Rule((leftFrontSensor['in range'] | rightfrontSensor['in range']) & (~sideSensor['far']), angularSpeed['left']),
+        ctrl.Rule(rightfrontSensor['in range'], linearSpeed['slow']),
+        ctrl.Rule(rightfrontSensor['in range'], angularSpeed['verySharpLeft']),
 
         # Front sensors close
-        ctrl.Rule(leftFrontSensor['close'] | rightfrontSensor['close'], linearSpeed['stop']),
-        ctrl.Rule((leftFrontSensor['close'] | rightfrontSensor['close']) & (~sideSensor['far']), angularSpeed['sharpLeft']),
+        ctrl.Rule(rightfrontSensor['close'], linearSpeed['stop']),
+        ctrl.Rule((rightfrontSensor['close']), angularSpeed['verySharpLeft']),
 
         # Front sensors very close
-        ctrl.Rule(leftFrontSensor['very close'] | rightfrontSensor['very close'], linearSpeed['back']),
-        ctrl.Rule((leftFrontSensor['very close'] | rightfrontSensor['very close']) & (~sideSensor['far']), angularSpeed['verySharpLeft']),
+        ctrl.Rule(rightfrontSensor['very close'], linearSpeed['back']),
+        ctrl.Rule(rightfrontSensor['very close'],
+                  angularSpeed['verySharpLeft']),
 
         ctrl.Rule(sideSensor['almost close'], angularSpeed['right']),
         ctrl.Rule(sideSensor['almost close'], linearSpeed['slow']),
 
+        ctrl.Rule(sideSensor['close'], angularSpeed['straight']),
+        ctrl.Rule(sideSensor['close'], linearSpeed['fast']),
+
         ctrl.Rule(sideSensor['very close'], angularSpeed['left']),
         ctrl.Rule(sideSensor['very close'], linearSpeed['slow']),
 
-        ctrl.Rule(sideSensor['in range'], linearSpeed['slow']),
-        ctrl.Rule(sideSensor['in range'], angularSpeed['sharpRight']),
+        ctrl.Rule(sideSensor['in range'], linearSpeed['fast']),
+        ctrl.Rule(sideSensor['in range'], angularSpeed['straight']),
 
-        ctrl.Rule(sideSensor['far'], angularSpeed['verySharpRight']),
-        ctrl.Rule(sideSensor['far'], linearSpeed['stop']),
-
+        ctrl.Rule(sideSensor['far'] & rightfrontSensor['far'], angularSpeed['verySharpRight']),
+        ctrl.Rule(sideSensor['far'] & rightfrontSensor['far'], linearSpeed['stop']),
     ]
 
     return rules
@@ -142,8 +147,8 @@ class FuzzyWallFollower:
         print("[{}, {}, {}, {}]".format(delta, sideSensor, leftFrontSensor, rightFrontSensor))
 
         self.sys.input['sideSensor'] = sideSensor
-        self.sys.input['deltaSideSensor'] = delta
-        self.sys.input['leftFrontSensor'] = leftFrontSensor
+        # self.sys.input['deltaSideSensor'] = delta
+        #self.sys.input['leftFrontSensor'] = leftFrontSensor
         self.sys.input['rightFrontSensor'] = rightFrontSensor
 
         self.sys.compute()

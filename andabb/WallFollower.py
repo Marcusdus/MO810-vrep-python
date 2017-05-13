@@ -9,17 +9,18 @@ def createSensorAtecendent(name: str):
     sensor = ctrl.Antecedent(np.arange(0, 2.01, 0.01), name)
     sensor['very close'] = fuzz.trapmf(sensor.universe, [0, 0, 0.2, 0.3])
     sensor['close'] = fuzz.trimf(sensor.universe, [0.2, 0.3, 0.5])
-    sensor['within_range'] = fuzz.trimf(sensor.universe, [0.3, 0.6, 0.9])
+    sensor['almost close'] = fuzz.trimf(sensor.universe, [0.4, 0.5, 0.6])
+    sensor['in range'] = fuzz.trimf(sensor.universe, [0.5, 0.7, 0.9])
     sensor['far'] = fuzz.trapmf(sensor.universe, [0.8, 0.9, 2, 2])
     return sensor
 
 
 def createDeltaAtecendent(name: str):
-    sensor = ctrl.Antecedent(np.arange(-2.0, 2.01, 0.01), name)
-    sensor['stable'] = fuzz.trimf(sensor.universe, [-0.15, 0, 0.15])
-    sensor['going far'] = fuzz.trimf(sensor.universe, [-0.5, -0.3, -0.1])
+    sensor = ctrl.Antecedent(np.arange(-2.0, 2.01, 0.001), name)
+    sensor['stable'] = fuzz.trimf(sensor.universe, [-0.01, 0, 0.01])
+    sensor['going far'] = fuzz.trimf(sensor.universe, [-0.5, -0.3, -0.005])
     sensor['going very far'] = fuzz.trapmf(sensor.universe, [-2, -2, -0.6, -0.4])
-    sensor['getting near'] = fuzz.trimf(sensor.universe, [0.1, 0.3, 0.5])
+    sensor['getting near'] = fuzz.trimf(sensor.universe, [0.005, 0.3, 0.5])
     sensor['getting very near'] = fuzz.trapmf(sensor.universe, [0.4, 0.6, 2, 2])
     return sensor
 
@@ -29,15 +30,23 @@ def createLinearSpeedConsequent():
     speed['back'] = fuzz.trimf(speed.universe, [-0.1, -0.03, 0])
     speed['stop'] = fuzz.trimf(speed.universe, [-0.01, 0, 0.01])
     speed['slow'] = fuzz.trimf(speed.universe, [0.03, 0.09, 0.15])
-    speed['fast'] = fuzz.trimf(speed.universe, [0.19, 0.2, 0.21])
+    speed['fast'] = fuzz.trimf(speed.universe, [0.2, 0.3, 0.4])
     speed.defuzzify_method = 'centroid'
     return speed
 
 
 def createAngularSpeedConsequent():
-    angularSpeed = ctrl.Consequent(np.arange(-0.5, 0.51, 0.01), 'angularSpeed')
-    angularSpeed.automf(7, "quant",
-                        ["verySharpRight", "sharpRight", "right", "straight", "left", "sharpLeft", "verySharpLeft"])
+    angularSpeed = ctrl.Consequent(np.arange(-0.8, 0.81, 0.01), 'angularSpeed')
+    angularSpeed['verySharpRight'] = fuzz.trapmf(angularSpeed.universe, [-0.8, -0.8, -0.5, -0.45])
+    angularSpeed['sharpRight'] = fuzz.trimf(angularSpeed.universe, [-0.5, -0.35, -0.2])
+    angularSpeed['right'] = fuzz.trimf(angularSpeed.universe, [-0.3, -0.1, 0.0])
+    angularSpeed['straight'] = fuzz.trimf(angularSpeed.universe, [-0.1, 0.0, 0.1])
+    angularSpeed['left'] = fuzz.trimf(angularSpeed.universe, [0.0, 0.1, 0.3])
+    angularSpeed['sharpLeft'] = fuzz.trimf(angularSpeed.universe, [0.2, 0.35, 0.5])
+    angularSpeed['verySharpLeft'] = fuzz.trapmf(angularSpeed.universe, [0.45, 0.5, 0.8, 0.8])
+
+    # angularSpeed.automf(7, "quant",
+    #                     ["verySharpRight", "sharpRight", "right", "straight", "left", "sharpLeft", "verySharpLeft"])
     angularSpeed.defuzzify_method = 'centroid'
     return angularSpeed
 
@@ -52,39 +61,46 @@ def createRules(leftFrontSensor: ctrl.Antecedent,
     rules = [
 
         ctrl.Rule(deltaSide['stable'] & (~sideSensor['far']), angularSpeed['straight']),
-        # ctrl.Rule(deltaSide['stable'], linearSpeed['fast']),
+        ctrl.Rule(deltaSide['stable'], linearSpeed['fast']),
 
-        ctrl.Rule(deltaSide['going far'] & (~sideSensor['far']), angularSpeed['right']),
-        # ctrl.Rule(deltaSide['going far'], linearSpeed['slow']),
+        ctrl.Rule(deltaSide['going far'] & (~sideSensor['far']), angularSpeed['left']),
+        ctrl.Rule(deltaSide['going far'] & (~sideSensor['far']), linearSpeed['slow']),
 
-        ctrl.Rule(deltaSide['going very far'] & (~sideSensor['far']), angularSpeed['sharpRight']),
+        ctrl.Rule(deltaSide['going very far'] & (~sideSensor['far']), angularSpeed['sharpLeft']),
         ctrl.Rule(deltaSide['going very far'] & (~sideSensor['far']), linearSpeed['stop']),
 
-        ctrl.Rule(deltaSide['getting near'], angularSpeed['left']),
-        # ctrl.Rule(deltaSide['getting near'], linearSpeed['slow']),
+        ctrl.Rule(deltaSide['getting near'] & (~sideSensor['far']), angularSpeed['right']),
+        ctrl.Rule(deltaSide['getting near'] & (~sideSensor['far']), linearSpeed['slow']),
 
-        ctrl.Rule(deltaSide['getting very near'] & (~sideSensor['far']), angularSpeed['sharpLeft']),
+        ctrl.Rule(deltaSide['getting very near'] & (~sideSensor['far']), angularSpeed['sharpRight']),
         ctrl.Rule(deltaSide['getting very near'] & (~sideSensor['far']), linearSpeed['stop']),
 
         # Front sensors far
-        ctrl.Rule(leftFrontSensor['far'] | rightfrontSensor['far'], linearSpeed['fast']),
+         ctrl.Rule((leftFrontSensor['far'] | rightfrontSensor['far']) & (~sideSensor['far']), linearSpeed['fast']),
         # ctrl.Rule(leftFrontSensor['far'] | rightfrontSensor['far'], angularSpeed['straight']),
 
 
         # Front sensors within range
-        ctrl.Rule(leftFrontSensor['within_range'] | rightfrontSensor['within_range'], linearSpeed['slow']),
-        ctrl.Rule(leftFrontSensor['within_range'] | rightfrontSensor['within_range'], angularSpeed['left']),
+        ctrl.Rule(leftFrontSensor['in range'] | rightfrontSensor['in range'], linearSpeed['slow']),
+        ctrl.Rule((leftFrontSensor['in range'] | rightfrontSensor['in range']) & (~sideSensor['far']), angularSpeed['left']),
 
         # Front sensors close
         ctrl.Rule(leftFrontSensor['close'] | rightfrontSensor['close'], linearSpeed['stop']),
-        ctrl.Rule(leftFrontSensor['close'] | rightfrontSensor['close'], angularSpeed['sharpLeft']),
+        ctrl.Rule((leftFrontSensor['close'] | rightfrontSensor['close']) & (~sideSensor['far']), angularSpeed['sharpLeft']),
 
         # Front sensors very close
         ctrl.Rule(leftFrontSensor['very close'] | rightfrontSensor['very close'], linearSpeed['back']),
-        ctrl.Rule(leftFrontSensor['very close'] | rightfrontSensor['very close'], angularSpeed['sharpLeft']),
+        ctrl.Rule((leftFrontSensor['very close'] | rightfrontSensor['very close']) & (~sideSensor['far']), angularSpeed['verySharpLeft']),
 
-        ctrl.Rule(sideSensor['very close'], angularSpeed['sharpLeft']),
-        ctrl.Rule(sideSensor['within_range'], angularSpeed['sharpRight']),
+        ctrl.Rule(sideSensor['almost close'], angularSpeed['right']),
+        ctrl.Rule(sideSensor['almost close'], linearSpeed['slow']),
+
+        ctrl.Rule(sideSensor['very close'], angularSpeed['left']),
+        ctrl.Rule(sideSensor['very close'], linearSpeed['slow']),
+
+        ctrl.Rule(sideSensor['in range'], linearSpeed['slow']),
+        ctrl.Rule(sideSensor['in range'], angularSpeed['sharpRight']),
+
         ctrl.Rule(sideSensor['far'], angularSpeed['verySharpRight']),
         ctrl.Rule(sideSensor['far'], linearSpeed['stop']),
 

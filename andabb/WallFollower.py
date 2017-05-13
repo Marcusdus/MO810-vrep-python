@@ -7,11 +7,11 @@ from skfuzzy import control as ctrl
 
 def createSensorAtecendent(name: str):
     sensor = ctrl.Antecedent(np.arange(0, 2.01, 0.01), name)
-    sensor['very close'] = fuzz.trapmf(sensor.universe, [0, 0, 0.2, 0.3])
+    sensor['very close'] = fuzz.trapmf(sensor.universe, [0, 0, 0.15, 0.27])
     sensor['close'] = fuzz.trimf(sensor.universe, [0.25, 0.3, 0.35])
-    sensor['almost close'] = fuzz.trimf(sensor.universe, [0.3, 0.5, 0.6])
-    sensor['in range'] = fuzz.trimf(sensor.universe, [0.5, 0.7, 0.9])
-    sensor['far'] = fuzz.trapmf(sensor.universe, [0.8, 0.9, 2, 2])
+    sensor['almost close'] = fuzz.trimf(sensor.universe, [0.33, 0.4, 0.45])
+    sensor['in range'] = fuzz.trimf(sensor.universe, [0.43, 0.55, 0.75])
+    sensor['far'] = fuzz.trapmf(sensor.universe, [0.7, 0.9, 2, 2])
     return sensor
 
 
@@ -36,14 +36,14 @@ def createLinearSpeedConsequent():
 
 
 def createAngularSpeedConsequent():
-    angularSpeed = ctrl.Consequent(np.arange(-0.8, 0.81, 0.01), 'angularSpeed')
-    angularSpeed['verySharpRight'] = fuzz.trapmf(angularSpeed.universe, [-0.8, -0.8, -0.5, -0.45])
+    angularSpeed = ctrl.Consequent(np.arange(-0.9, 0.91, 0.01), 'angularSpeed')
+    angularSpeed['verySharpRight'] = fuzz.trapmf(angularSpeed.universe, [-0.9, -0.9, -0.5, -0.45])
     angularSpeed['sharpRight'] = fuzz.trimf(angularSpeed.universe, [-0.5, -0.35, -0.2])
     angularSpeed['right'] = fuzz.trimf(angularSpeed.universe, [-0.3, -0.1, 0.0])
     angularSpeed['straight'] = fuzz.trimf(angularSpeed.universe, [-0.1, 0.0, 0.1])
     angularSpeed['left'] = fuzz.trimf(angularSpeed.universe, [0.0, 0.1, 0.3])
     angularSpeed['sharpLeft'] = fuzz.trimf(angularSpeed.universe, [0.2, 0.35, 0.5])
-    angularSpeed['verySharpLeft'] = fuzz.trapmf(angularSpeed.universe, [0.45, 0.5, 0.8, 0.8])
+    angularSpeed['verySharpLeft'] = fuzz.trapmf(angularSpeed.universe, [0.45, 0.5, 0.9, 0.9])
 
     # angularSpeed.automf(7, "quant",
     #                     ["verySharpRight", "sharpRight", "right", "straight", "left", "sharpLeft", "verySharpLeft"])
@@ -54,6 +54,7 @@ def createAngularSpeedConsequent():
 def createRules(leftFrontSensor: ctrl.Antecedent,
                 rightfrontSensor: ctrl.Antecedent,
                 sideSensor: ctrl.Antecedent,
+                diagSensor: ctrl.Antecedent,
                 deltaSide: ctrl.Antecedent,
                 linearSpeed: ctrl.Consequent,
                 angularSpeed: ctrl.Consequent):
@@ -76,7 +77,7 @@ def createRules(leftFrontSensor: ctrl.Antecedent,
         # ctrl.Rule(deltaSide['getting very near'] & (~sideSensor['far']), linearSpeed['stop']),
 
         # Front sensors far
-        #ctrl.Rule((leftFrontSensor['far'] & rightfrontSensor['far']) & (~sideSensor['far']), linearSpeed['fast']),
+        # ctrl.Rule((leftFrontSensor['far'] & rightfrontSensor['far']) & (~sideSensor['far']), linearSpeed['fast']),
         # ctrl.Rule(leftFrontSensor['far'] | rightfrontSensor['far'], angularSpeed['straight']),
 
         # ctrl.Rule((leftFrontSensor['very close'] | leftFrontSensor['very close']) & (
@@ -84,11 +85,11 @@ def createRules(leftFrontSensor: ctrl.Antecedent,
 
         # Front sensors within range
         ctrl.Rule(rightfrontSensor['in range'], linearSpeed['slow']),
-        ctrl.Rule(rightfrontSensor['in range'], angularSpeed['verySharpLeft']),
+        ctrl.Rule(rightfrontSensor['in range'], angularSpeed['straight']),
 
         # Front sensors close
-        ctrl.Rule(rightfrontSensor['close'], linearSpeed['stop']),
-        ctrl.Rule((rightfrontSensor['close']), angularSpeed['verySharpLeft']),
+        ctrl.Rule(rightfrontSensor['close'] | rightfrontSensor['almost close'], linearSpeed['stop']),
+        ctrl.Rule((rightfrontSensor['close'] | rightfrontSensor['almost close']), angularSpeed['verySharpLeft']),
 
         # Front sensors very close
         ctrl.Rule(rightfrontSensor['very close'], linearSpeed['back']),
@@ -105,10 +106,14 @@ def createRules(leftFrontSensor: ctrl.Antecedent,
         ctrl.Rule(sideSensor['very close'], linearSpeed['slow']),
 
         ctrl.Rule(sideSensor['in range'], linearSpeed['fast']),
-        ctrl.Rule(sideSensor['in range'], angularSpeed['straight']),
+        ctrl.Rule(sideSensor['in range'], angularSpeed['sharpRight']),
 
         ctrl.Rule(sideSensor['far'] & rightfrontSensor['far'], angularSpeed['verySharpRight']),
         ctrl.Rule(sideSensor['far'] & rightfrontSensor['far'], linearSpeed['stop']),
+
+        ctrl.Rule(diagSensor['in range'], angularSpeed['left']),
+        #ctrl.Rule(diagSensor['in range'], linearSpeed['slow']),
+
     ]
 
     return rules
@@ -120,6 +125,7 @@ class FuzzyWallFollower:
         self.leftFrontSensor = createSensorAtecendent('leftFrontSensor')
         self.rightFrontSensor = createSensorAtecendent('rightFrontSensor')
         self.deltaSide = createDeltaAtecendent('deltaSideSensor')
+        self.diagSensor = createSensorAtecendent('diagSensor')
 
         self.linearCsq = createLinearSpeedConsequent()
         self.angularCsq = createAngularSpeedConsequent()
@@ -127,6 +133,7 @@ class FuzzyWallFollower:
         self.rules = createRules(self.leftFrontSensor,
                                  self.rightFrontSensor,
                                  self.sideSensor,
+                                 self.diagSensor,
                                  self.deltaSide,
                                  self.linearCsq, self.angularCsq)
 
@@ -141,14 +148,15 @@ class FuzzyWallFollower:
             delta = sensorsReadings[7] - self.previousMeasurement
         self.previousMeasurement = sensorsReadings[7]
 
-        return self.computeDelta(delta, sensorsReadings[7], sensorsReadings[3], sensorsReadings[4])
+        return self.computeDelta(delta, sensorsReadings[7], sensorsReadings[5], sensorsReadings[3], sensorsReadings[4])
 
-    def computeDelta(self, delta, sideSensor, leftFrontSensor, rightFrontSensor):
-        print("[{}, {}, {}, {}]".format(delta, sideSensor, leftFrontSensor, rightFrontSensor))
+    def computeDelta(self, delta, sideSensor, diagSensor, leftFrontSensor, rightFrontSensor):
+        print("[{}, {}, {}, {}, {}]".format(delta, sideSensor, diagSensor, leftFrontSensor, rightFrontSensor))
 
         self.sys.input['sideSensor'] = sideSensor
         # self.sys.input['deltaSideSensor'] = delta
-        #self.sys.input['leftFrontSensor'] = leftFrontSensor
+        # self.sys.input['leftFrontSensor'] = leftFrontSensor
+        self.sys.input['diagSensor'] = diagSensor
         self.sys.input['rightFrontSensor'] = rightFrontSensor
 
         self.sys.compute()

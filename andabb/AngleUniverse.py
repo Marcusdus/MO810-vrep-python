@@ -13,7 +13,7 @@ def calculateDelta(start, end, spinRightOrientation: bool = True):
     :param spinRightOrientation: if the spin is turning right this should be True
     :return: the absolute delta difference
     """
-    if isclose(end, start, abs_tol=0.1):
+    if isclose(end, start, abs_tol=0.00001):
         return 0
 
     end = convertNegativePiUniverseTo360(end)

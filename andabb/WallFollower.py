@@ -4,6 +4,8 @@ import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 
+from .ISensorBasedController import ISensorBasedController
+
 
 def createSensorAtecendent(name: str):
     sensor = ctrl.Antecedent(np.arange(0, 2.01, 0.01), name)
@@ -89,8 +91,13 @@ def createRules(rightfrontSensor: ctrl.Antecedent,
     return rules
 
 
-class FuzzyWallFollower:
+class FuzzyWallFollower(ISensorBasedController):
+    """
+    Follow right side wall using Fuzzy. 
+    """
+
     # TODO add option follow left or right wall
+
     def __init__(self):
         self.sideSensor = createSensorAtecendent('sideSensor')
         self.rightFrontSensor = createSensorAtecendent('rightFrontSensor')

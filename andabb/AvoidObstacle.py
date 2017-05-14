@@ -4,6 +4,7 @@ import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 
+from .ISensorBasedController import ISensorBasedController
 
 def createSensorAtecendent(name: str):
     sensor = ctrl.Antecedent(np.arange(0, 2.01, 0.01), name)
@@ -49,14 +50,11 @@ def createRules(frontSensors: List[ctrl.Antecedent],
         # Front sensors close
         ctrl.Rule(frontSensors[0]['close'] | frontSensors[1]['close'], linearSpeed['stop']),
         ctrl.Rule(frontSensors[0]['close'] | frontSensors[1]['close'], angularSpeed['left']),
-        #ctrl.Rule(frontSensors[0]['close'], angularSpeed['left']),
-        #ctrl.Rule(frontSensors[1]['close'], angularSpeed['right']),
 
         # Front sensors very close
         ctrl.Rule(frontSensors[0]['very close'] | frontSensors[1]['very close'], linearSpeed['back']),
         ctrl.Rule(frontSensors[0]['very close'] | frontSensors[1]['very close'], angularSpeed['sharpLeft']),
-        # ctrl.Rule(frontSensors[0]['very close'], angularSpeed['left']),
-        # ctrl.Rule(frontSensors[1]['very close'], angularSpeed['right']),
+
     ]
     for sensor in leftSensors:
         rules.append(ctrl.Rule(sensor['close'], angularSpeed['sharpRight']))
@@ -71,7 +69,11 @@ def createRules(frontSensors: List[ctrl.Antecedent],
     return rules
 
 
-class FuzzyAvoidObstacle:
+class FuzzyAvoidObstacle(ISensorBasedController):
+    """
+    Fuzzy controller to avoid obstacles. 
+    """
+
     def __init__(self):
         sensors = []
         for i in range(0, 8):

@@ -6,7 +6,7 @@ from .RobotDummyDriver import RobotDummyDriver
 from .RobotMonitor import RobotMonitor
 from .Simulator import Simulator
 from .plotrobot import plotRobotAndObjects
-
+from .WallFollower import FuzzyWallFollower
 
 def main():
     sim = Simulator()
@@ -14,10 +14,8 @@ def main():
 
     stopEvent = threading.Event()
 
-    poseUpdater = GroundTruthPoseUpdater()
-
     robot = rb.newPioonerRobot(sim)
-    monitor = RobotMonitor(robot, poseUpdater, stopEvent, 200)
+    monitor = RobotMonitor(robot, GroundTruthPoseUpdater(), FuzzyWallFollower(), stopEvent, 200)
     #driver = RobotDummyDriver(robot, stopEvent)
     #monitor.subscribeToFrontObjectDetection(driver)
 

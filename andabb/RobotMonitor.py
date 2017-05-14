@@ -3,7 +3,7 @@ import threading
 from time import sleep
 from typing import List
 
-from .WallFollower import FuzzyWallFollower
+from .ISensorBasedController import ISensorBasedController
 from .ObjectDetectionListener import DetectedObject
 from .ObjectDetectionListener import IObjectDetectionListener
 from .PoseUpdater import GroundTruthPoseUpdater
@@ -14,7 +14,8 @@ from .Robot import Robot
 
 
 class RobotMonitor(threading.Thread):
-    def __init__(self, robot: Robot, poseUpdater: IPoseUpdater, stopEvent: threading.Event, intervalMs=200):
+    def __init__(self, robot: Robot, poseUpdater: IPoseUpdater, controller: ISensorBasedController,
+                 stopEvent: threading.Event, intervalMs=200):
         threading.Thread.__init__(self)
         self.robot = robot
         self.poseUpdater = poseUpdater
@@ -24,9 +25,7 @@ class RobotMonitor(threading.Thread):
         self.frontObjDetecListeners = []
         self.positionListeners = []
         self.lastRobotPose = Pose()
-
-        #self.controller = FuzzyAvoidObstacle()
-        self.controller = FuzzyWallFollower()
+        self.controller = controller
 
     def run(self):
         while not self.stopEvent.is_set():

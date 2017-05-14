@@ -39,9 +39,11 @@ class RobotMonitor(threading.Thread):
         self.robot.pose = self.poseUpdater.update(self.robot)
 
         self.readPosition()
-        lspeed, aspeed = self.readSonarReadings()
-        print("Speed: {}, Ang:{} ".format(lspeed, aspeed))
-        self.robot.drive(lspeed, aspeed)
+
+        if self.controller:
+            lspeed, aspeed = self.controller.compute(self.readSonarReadings())
+            print("Speed: {}, Ang:{} ".format(lspeed, aspeed))
+            self.robot.drive(lspeed, aspeed)
 
     def readSonarReadings(self):
         # FIXME: robot should know the position of each sonar
@@ -62,7 +64,7 @@ class RobotMonitor(threading.Thread):
                 sensorReadings.append(2.0)
 
         self.__frontObjectDetected(detectedObjs)
-        return self.controller.compute(sensorReadings)
+        return sensorReadings
 
     def readPosition(self):
         if self.lastRobotPose != self.robot.pose:

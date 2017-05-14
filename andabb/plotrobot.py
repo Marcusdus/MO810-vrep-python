@@ -37,7 +37,6 @@ class DynamicPlot(IPositionListener, IObjectDetectionListener):
         for d in detectedObjs:
             self.detected.append(d)
 
-    # TODO: we need to check if this is correct!
     def abs_pos_x(self, d):
         return self.lastX + ((WHEELS_RAD + d.dist) * math.cos(self.lastAngle + d.angle))
 
@@ -124,20 +123,3 @@ def plotRobot(robot: Robot, intervalMs=500):
     plt.show()
 
 
-def main():
-    from andabb.Simulator import Simulator
-
-    sim = Simulator()
-    sim.connect()
-
-    poseUpdater = OdometryPoseUpdater()
-
-    robot = rb.newPioonerRobot(sim)
-    stopEvent = threading.Event()
-    monitor = RobotMonitor(robot, poseUpdater, stopEvent)
-    monitor.start()
-    # plotRobotAndObjects(monitor)
-    plotRobot(robot)
-    stopEvent.set()
-    monitor.join()
-    sim.disconnect()

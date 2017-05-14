@@ -1,15 +1,17 @@
 import argparse
+import logging
 import threading
 
 import andabb.Robot as rb
+from .AvoidObstacle import FuzzyAvoidObstacle
 from .PoseUpdater import GroundTruthPoseUpdater
+from .PoseUpdater import OdometryPoseUpdater
 from .RobotMonitor import RobotMonitor
 from .Simulator import Simulator
 from .WallFollower import FuzzyWallFollower
-from .plotrobot import plotRobotAndObjects
 from .plotrobot import plotRobot
-from .AvoidObstacle import FuzzyAvoidObstacle
-from .PoseUpdater import OdometryPoseUpdater
+from .plotrobot import plotRobotAndObjects
+
 
 def parser():
     parser = argparse.ArgumentParser(description='Pioneer V-REP controller.')
@@ -20,11 +22,18 @@ def parser():
                         help='Use odometry to calculate the robot pose.')
     parser.add_argument('--plot-odometry-vs-gt', action='store_true',
                         help='Plot odometry vs ground-truth. Please also set --odometry.')
+    parser.add_argument("-v", "--verbose", help="increase output verbosity",
+                        action="store_true")
     return parser
 
 
 def main():
     args = parser().parse_args()
+
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+    else:
+        logging.basicConfig(level=logging.WARN)
 
     sim = Simulator()
     sim.connect()

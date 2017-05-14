@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 import numpy as np
@@ -92,7 +93,7 @@ class FuzzyAvoidObstacle(ISensorBasedController):
         self.sensors = sensors
 
     def compute(self, sensorsReadings: List[float]):
-        print(sensorsReadings)
+        logging.debug(sensorsReadings)
         for i in range(0, 8):
             self.sys.input['sensor' + str(i)] = sensorsReadings[i]
 

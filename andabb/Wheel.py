@@ -1,4 +1,6 @@
+import logging
 from math import pi
+from math import degrees
 from time import time
 
 from andabb.AngleUniverse import calculateDelta
@@ -19,9 +21,6 @@ class Wheel:
     def calculateSpeed(self):
         now = time()
 
-        # print("Encoder r {}, l {}, deltaT {}".format(degrees(encoderRight), degrees(encoderLeft), timeDelta))
-        # print("delta Encoder r {}, l {}".format(degrees(deltaEncoderRight), degrees(deltaEncoderLeft)))
-
         delta = self.getDeltaAngle()
         timeDelta = now - self.lastTimestamp
         self.lastTimestamp = now
@@ -41,6 +40,8 @@ class Wheel:
         if delta > pi:
             delta = (2 * pi) - delta
             self.clockwiseSpin = not self.clockwiseSpin
+
+        logging.debug("Encoder {}, delta {}".format(degrees(encoder), delta))
         return delta
 
     def setSpeed(self, speed):

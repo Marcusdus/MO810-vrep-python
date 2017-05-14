@@ -1,6 +1,6 @@
 import abc
+import logging
 from math import cos
-from math import degrees
 from math import sin
 from time import time
 
@@ -29,7 +29,7 @@ class GroundTruthPoseUpdater(IPoseUpdater):
         position = robot.sim.getObjectPosition(robot.handle)
         orientation = robot.sim.getObjectOrientation(robot.handle)
         p = Pose(position[0], position[1], orientation[2])
-        #print("GT pose: {}".format(p))
+        logging.debug("GT pose: {}".format(p))
 
         return Pose(position[0], position[1], orientation[2])
 
@@ -48,7 +48,7 @@ class OdometryPoseUpdater(IPoseUpdater):
 
         if self.start:
             self.lastPose = robot.gtPose
-            print("Start pose: {}".format(robot.gtPose))
+            # print("Start pose: {}".format(robot.gtPose))
             self.lastTimestamp = now
             self.start = self.lastPose.isZero()
 
@@ -57,13 +57,13 @@ class OdometryPoseUpdater(IPoseUpdater):
         vR = rWheel.calculateSpeed()
         vL = lWheel.calculateSpeed()
 
-        print("vR {}, vL{}".format(vR, vL))
+        logging.debug("vR {}, vL{}".format(vR, vL))
 
         timeDelta = now - self.lastTimestamp
         deltaTheta = (vR - vL) * (timeDelta / WHEELS_DIST)
         deltaSpace = (vR + vL) * (timeDelta / 2)
 
-        print("deltaSpace {}, deltaTheta{}".format(deltaSpace, degrees(deltaTheta)))
+        logging.debug("deltaSpace {}, deltaTheta{}".format(deltaSpace, degrees(deltaTheta)))
 
         x = self.lastPose.x + (deltaSpace * cos(addDelta(self.lastPose.orientation, deltaTheta / 2)))
         y = self.lastPose.y + (deltaSpace * sin(addDelta(self.lastPose.orientation, deltaTheta / 2)))
@@ -72,5 +72,5 @@ class OdometryPoseUpdater(IPoseUpdater):
         self.lastTimestamp = now
         self.lastPose = Pose(x, y, theta)
 
-        print("odometry {}".format(self.lastPose))
+        logging.debug("odometry {}".format(self.lastPose))
         return self.lastPose

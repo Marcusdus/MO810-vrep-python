@@ -1,4 +1,5 @@
 import math
+import logging
 import threading
 from time import sleep
 from typing import List
@@ -42,11 +43,10 @@ class RobotMonitor(threading.Thread):
 
         if self.controller:
             lspeed, aspeed = self.controller.compute(self.readSonarReadings())
-            print("Speed: {}, Ang:{} ".format(lspeed, aspeed))
+            logging.debug("Speed: {}, Ang:{} ".format(lspeed, aspeed))
             self.robot.drive(lspeed, aspeed)
 
     def readSonarReadings(self):
-        # FIXME: robot should know the position of each sonar
         # 0: 90
         # 1: 50
         # 2: 30

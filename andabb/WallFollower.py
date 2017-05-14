@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 import numpy as np
@@ -119,7 +120,7 @@ class FuzzyWallFollower(ISensorBasedController):
         return self.computeDelta(sensorsReadings[7], sensorsReadings[5], sensorsReadings[4])
 
     def computeDelta(self, sideSensor, diagSensor, rightFrontSensor):
-        # print("[{}, {}, {}, {}, {}]".format(delta, sideSensor, diagSensor, leftFrontSensor, rightFrontSensor))
+        logging.debug("[{}, {}, {}]".format(sideSensor, diagSensor, rightFrontSensor))
 
         self.sys.input['sideSensor'] = sideSensor
         self.sys.input['diagSensor'] = diagSensor

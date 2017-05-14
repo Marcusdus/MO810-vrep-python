@@ -1,4 +1,4 @@
-# AndaBB
+# MO810-vrep-python
 
 MO810/MC959 - 1s2017 - V-REP remote API Python project. 
 

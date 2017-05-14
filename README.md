@@ -8,7 +8,8 @@ MO810/MC959 - 1s2017 - V-REP remote API Python project.
 This project can be installed with pip. It needs python 3.5 
 
 ```bash
-pip install projetobb/
+git clone https://github.com/luwood/MO810-vrep-python.git
+pip install MO810-vrep-python/
 ```
 
 ### Using virtualenv
@@ -20,7 +21,7 @@ virtualenv -p python3 py3
 source py3/bin/activate
 
 # Install the package. The -e option is used for the development mode (all the changes in the project will cause the executable to reflect those). 
-pip install -e projetobb/
+pip install -e  MO810-vrep-python/
 
 ```
 
@@ -32,7 +33,7 @@ Start V-REP and load one of the scenes in scene directory, like: scenes/p3dx.ttt
 # If you are not sure of the paths, you can debug with strace (strace -eopen)
 
 # Example of usage
-export VREP_LIB_PATH=/VREP/programming/remoteApiBindings/python/python
+export VREP_LIB_PATH=/VREP/programming/remoteApiBindings/lib/lib/64Bit
 
 # To avoid collisions
 pioneer --controller=avoid-obstacle
@@ -62,6 +63,6 @@ pioneer --controller=wall-follow
 ### Unit tests
 To run all the unit tests
 ```bash
-cd projetobb/
+cd MO810-vrep-python/
 python -m unittest discover
 ```

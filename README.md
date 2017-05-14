@@ -25,17 +25,37 @@ pip install -e projetobb/
 ```
 
 ## Execute 
-Start V-REP and load the scene: scenes/p3dx.ttt. 
+Start V-REP and load one of the scenes in scene directory, like: scenes/p3dx.ttt. 
 ```bash
 # You need to define where the V-REP remoteApi dynamic library is. If the library is under a usual path, then you don't need to worry. 
-# Otherwise set the path with LD_LIBRARY_PATH.
+# Otherwise set the path with the envinronment variable LD_LIBRARY_PATH or VREP_LIB_PATH. 
 # If you are not sure of the paths, you can debug with strace (strace -eopen)
 
-# To execute the walking algorithm and the graph
-LD_LIBRARY_PATH=./ andabb
+# Example of usage
+export VREP_LIB_PATH=/VREP/programming/remoteApiBindings/python/python
 
-# To execute only the graph
-LD_LIBRARY_PATH=./ andabb-graph
+# To avoid collisions
+pioneer --controller=avoid-obstacle
+
+# To follow the right wall
+pioneer --controller=wall-follow
+
+# The program help
+#usage: pioneer [-h] [--controller {avoid-obstacle,wall-follow}] [--odometry]
+#               [--plot-odometry-vs-gt] [-v]
+#
+#Pi#oneer V-REP controller.
+#
+#optional arguments:
+#  -h, --help            show this help message and exit
+#  --controller {avoid-obstacle,wall-follow}
+#                        Controller to be used.
+#  --odometry            Use odometry to calculate the robot pose.
+#  --plot-odometry-vs-gt
+#                        Plot odometry vs ground-truth. Please also set
+#                        --odometry.
+#  -v, --verbose         increase output verbosity
+
 
 ```
 

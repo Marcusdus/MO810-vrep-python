@@ -4,3 +4,12 @@
 launch.json
 remoteApi.dll
 *.egg-info/
+report/*.log
+report/*.aux
+report/*.bbl
+report/*.blg
+report/*.brf
+report/*.dvi
+report/*.gz
+
+

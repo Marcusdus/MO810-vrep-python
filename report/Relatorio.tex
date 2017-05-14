@@ -1,0 +1,267 @@
+%% Adaptado de 
+%% http://www.ctan.org/tex-archive/macros/latex/contrib/IEEEtran/
+%% Traduzido para o congresso de IC da USP
+%%*****************************************************************************
+% Não modificar
+
+\documentclass[twoside,conference,a4paper]{IEEEtran}
+
+%******************************************************************************
+% Não modificar
+\usepackage{IEEEtsup} % Definições complementares e modificações.
+\usepackage[latin1]{inputenc} % Disponibiliza acentos.
+\usepackage[english,brazil]{babel}
+%% Disponibiliza Inglês e Português do Brasil.
+\usepackage{latexsym,amsfonts,amssymb} % Disponibiliza fontes adicionais.
+\usepackage{theorem} 
+\usepackage[cmex10]{amsmath} % Pacote matemático básico 
+\usepackage{url} 
+%\usepackage[portuges,brazil,english]{babel}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{color}
+\usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
+\usepackage[tight,footnotesize]{subfigure} 
+\usepackage[noadjust]{cite} % Disponibiliza melhorias em citações.
+\usepackage{listings}
+\usepackage{todonotes}
+%%*****************************************************************************
+
+\begin{document}
+\selectlanguage{brazil}
+\renewcommand{\IEEEkeywordsname}{Palavras-chave}
+
+%%*****************************************************************************
+
+\urlstyle{tt}
+% Indicar o nome do autor e o curso/nível (grad-mestrado-doutorado-especial)
+\title{MO810 - Trabalho 2}
+\author{%
+ \IEEEauthorblockN{Luísa Madeira Cardoso\,\IEEEauthorrefmark{1}}
+ \IEEEauthorblockA{\IEEEauthorrefmark{1}%
+                   Aluno especial - Mestrado \\
+                   E-mail: lu.madeira2@gmail.com}
+}
+
+%%*****************************************************************************
+
+\maketitle
+
+%%*****************************************************************************
+% Resumo do trabalho
+\begin{abstract}
+O objetivo deste trabalho é a implementação de um sistema de controle de um robô diferencial executado no simulador V-REP. Foram implementados dois comportamentos de controle \textit{Avoid Obstacle} e \textit{Wall Follow} utilizando sistemas Fuzzy em Python. Além disso a pose do robô foi estimada através da odometria. 
+
+Os controles implementados em Fuzzy mostram-se promissores, mas ainda apresentam falhas. O cálculo da odometria provou-se extremamente vulnerável a erros acumulados. 
+
+\end{abstract}
+
+% Indique três palavras-chave que descrevem o trabalho
+\begin{IEEEkeywords}
+ V-REP Pioneer AvoidCollision WallFollow Fuzzy
+\end{IEEEkeywords}
+
+%%*****************************************************************************
+% Modifique as seções de acordo com o seu projeto
+
+\section{Introdução}
+
+Este projeto consiste no desenvolvimento de um sistema de controle para o \textit{Pioneer P3-DX} no simulador \textit{V-REP}. A implementação foi realizada em Python 3.5, com a utilização de algumas bibliotecas como o Scikit-fuzzy e Matplotlib. O código fonte pode ser obtido em https://github.com/luwood/MO810-vrep-python, as instruções de instalação se encontram no README do projeto. 
+
+Este artigo está dividido em três sessões principais, cada uma com sua apresentação e discussão dos resultados.
+
+\begin{itemize}
+ \item Odometria
+ \item Controle: evitar obstáculo
+ \item Controle: seguir parede
+\end{itemize}
+
+
+\section{Odometria}
+O cálculo da odometria foi realizado com base na estimativa de velocidade das rodas. A implementação deste componente está na classe \textit{OdometryPoseUpdater}. 
+
+\subsection{Rodas}
+Cada roda possui um \textit{encoder} que provê sua posição angular. Através da coleta temporal desta informação é possível determinar sua velocidade utilizando a seguinte fórmula:
+ 
+\[ V = \frac{\Delta \theta}{\Delta time} R \]
+
+Em que \( \Delta \theta \) representa a diferença angular entre posições do \textit{encoder} durante um intervalo de tempo \(\Delta time\) e \(R\) é o raio da roda. É importante destacar que o cálculo da diferença angular deve levar em conta a orientação do giro e o universo em que os ângulos estão.  
+
+A implementação do cálculo de velocidade da roda encontra-se na classe \textit{Wheel}. A orientação do giro é obtida utilizando a hipótese que a diferença angular deve ser sempre menor do que \( \pi \). 
+
+\subsection{Velocidade do Robô diferencial}
+Dada a velocidade de cada roda, pode-se calcular a velocidade linear e angular do robô através da fórmula:
+
+\[ V = \frac{V_r + V_l}{2}\]
+\[ \omega = \frac{V_r - V_l}{D}\]
+
+Em que \(V_r\) é a velocidade da roda direita, \(V_l\) é a roda esquerda, \(D\) é a distância entre as rodas, \(V\) é a velocidade linear e \(\omega\) é a velocidade angular. 
+
+\subsection{Pose}
+A pose do robô é então calculada 
+
+
+\begin{lstlisting}[language=python]
+x = lastPose.x + (deltaSpace * cos( \ 
+    addDelta(lastPose.orientation, deltaTheta/2)))
+y = lastPose.y + (deltaSpace * sin( \ 
+    addDelta(lastPose.orientation, deltaTheta/2)))
+theta = addDelta(lastPose.orientation, \
+                 deltaTheta)
+        
+\end{lstlisting}
+
+\subsection{Resultados}
+
+O gráfico comparando a posição real do robô e a posição calculada através da odometria pose ser visto na figura~\ref{fig:fig0}. É possível observar que o trajeto em linha reta obtido pela odometria é fiel a realidade. Porém assim que a primeira curva é realizada a diferença entre as posições começa a divegir. A diferença então que começa pouca, torna-se a cada iteração maior - devido aos erros acumulados. A tabela \ref{tab:tab1} mostra a evolução do erro no cálculo da orientação. 
+
+\begin{table}[ht]
+\renewcommand{\arraystretch}{1.3}
+\centering
+ \caption{Diferença \(\theta\) em graus - a cada 200ms}
+ \label{tab:tab1}
+ \begin{tabular}{lcc}\hline
+Real & Odometria & Erro \\ \hline \hline
+  -0.424  & -0.406    & 0.018 \\
+-0.515  & -0.488    & 0.027 \\
+-0.783  & -0.718    & 0.065 \\
+-1.182  & -1.065    & 0.117 \\
+-2.033  & -1.818    & 0.215 \\
+-3.048  & -2.724    & 0.324 \\
+-4.355  & -3.861    & 0.494 \\
+-6.122  & -5.416    & 0.706 \\
+-7.843  & -6.953    & 0.89  \\
+-9.851  & -8.747    & 1.104 \\
+-12.613 & -11.227   & 1.386 \\
+-14.864 & -13.288   & 1.576 \\
+-18.003 & -16.129   & 1.874 \\
+-22.479 & -20.084   & 2.395 \\ \hline
+ \end{tabular}
+\end{table}
+
+Pode-se concluir que a odometria é um método de estimativa extremamente suscetível a erros acumulados. Para tornar este método viável seria necessário necessário realizar correções no cálculo da orientação. A utilização de uma bússola, por exemplo, poderia auxiliar nesta computação. 
+
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\hsize]{images/odometry.png}
+\caption{Odometria: Linha vermelha, Ground Thruth: Linha azul - Exemplo com script rodando algoritmo de Braitenberg}
+\label{fig:fig0}
+\end{figure}
+
+\section{Controle: Evitar obstáculos}
+
+A classe que implementa o comportamento \textit{AvoidCollision} é \textit{FuzzyAvoidObstacle}. 
+A entrada do sistemas são os oito sensores frontais do \textit{Pionner}. Todos os sensores são modelados pelas mesmas funções de precedência descritas na figura~\ref{fig:fig1} \cite{Beom:1995}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\hsize]{images/sensor_avoid_obstacle.png}
+\caption{Modelagem sensor de proximidade - Exemplo de ativação de região}
+\label{fig:fig1}
+\end{figure}
+
+As saídas do sistema são a velocidade angular e linear do robô. A figura~\ref{fig:fig2} mostra a modelagem da primeira, na qual a função de defuzificação é dada pela média dos máximos (\textit{mom}). A velocidade linear é modelada de acordo com a figura  ~\ref{fig:fig3} e o método \textit{centróide} é utilizado na defuzificação. 
+
+O conjunto de regras é composto por 26 declarações, existindo pelo menos 3 por sensor. Os sensores frontais, no entanto, são os fatores mais decisivos para a saída do sistema. Com o intuito de evitar situações em que pode existir o equilíbrio, os sensores frontais sempre levam a ativação da saída "vire a esquerda". 
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\hsize]{images/angular_speed_avoid_obstacle.png}
+\caption{Modelagem velocidade angular - Exemplo de ativação}
+\label{fig:fig2}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\hsize]{images/linear_speed_avoid_obstacle.png}
+\caption{Modelagem velocidade linear - Exemplo de ativação}
+\label{fig:fig3}
+\end{figure}
+
+\subsection{Resultados}
+
+Um exemplo do resultado obtido pode ser visto na figura ~\ref{fig:fig4}. O robô nunca colide com nenhum obstáculo e é capaz de passar por ambientes em que existe uma disposição mais complicada dos objetos, por exemplo o canto onde residem duas cadeiras e uma planta. No entanto, pode-se perceber uma forte tendência de curva a esquerda e que outros ambientes nunca são alcançados.  
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\hsize]{images/avoid_obstacle2.png}
+\caption{Modelagem velocidade linear - Exemplo de ativação}
+\label{fig:fig4}
+\end{figure}
+
+\section{Controle: Seguir Parede}
+A classe que implementa o comportamento \textit{WallFollow} é \textit{FuzzyWallFollower}. O controle tem por objetivo manter uma distância de 30cm da parede direita. A entrada do sistemas são apenas dois sensores do \textit{Pionner} modelados de acordo com a figura~\ref{fig:fig5}. 
+
+As regras deste sistema são extremamente simples e podem ser descritas como:
+
+\begin{itemize}
+ \item Se existe algo na frente, vire a esquerda.
+ \item Se a distância do lado direito é grande, vire a direita.
+ \item Se a distância do lado direito é pequena, vire a esquerda.
+\end{itemize}
+
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\hsize]{images/sensor_wall_follow.png}
+\caption{Modelagem sensor frontal - Exemplo de ativação}
+\label{fig:fig5}
+\end{figure}
+
+As saídas do sistema são a velocidade angular - figura~\ref{fig:fig6} - e a velocidade linear - figura~\ref{fig:fig7}. 
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\hsize]{images/angular_speed_wall_follow.png}
+\caption{Modelagem velocidade angular - Exemplo de ativação}
+\label{fig:fig6}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\hsize]{images/linear_speed_wall_follow.png}
+\caption{Modelagem velocidade linear - Exemplo de ativação}
+\label{fig:fig7}
+\end{figure}
+
+\subsection{Resultados}
+
+O resultado obtido pode ser visto na figura~\ref{fig:fig8}. Note que todas as portas foram fechadas para simplificar o ambiente. O robô se mantém bem próximo a parede. Entretanto, ele não é capaz de lidar com situações nas quais existe um obstáculo em seu caminho. A região destacada por um circulo azul indica a colisão do robô com um armário. Isso acontece porque apesar de inicialmente o sensor frontal indicar que existe um objeto próximo e que uma curva a esquerda é necessária, assim que o objeto deixa de ser percebido pelo sensor frontal entram em ação as regras relativas a distância da parede. No caso, a distância do armário é capturada na diagonal e é uma distância maior do que a aceitável, levando o robô a tentar se aproximar. No momento em que a curva para a direita é ativada, o robô colide com a quina do móvel. 
+
+A figura ~\ref{fig:fig9} mostra uma versão mais relaxada das distâncias na modelagem dos sensores. O robô fica então muito mais distante da parede e realiza curvas muito abertas, porém é capaz de evitar obstáculos como os armários. Outras abordagens também foram exploradas, como a adição de uma variável de entrada que corresponde a diferença da distância da parede entre iterações, porém elas não resultaram em melhorias relevantes e portanto não serão abordadas nesta sessão.
+
+Pode-se concluir que apenas os três sensores e a modelagem Fuzzy não foram suficientes para fazer com que o robô tivesse um comportamento de seguir a parede sem nenhum problema. O robô está vulnerável a colidir com qualquer tipo de objeto que não é capturado pelo seu sensor frontal. Além disso, objetos no meio do caminho também podem levar a uma colisão indesejada. Para resolver o segundo problema o modelo poderia ser mais refinado para realizar curvas rentes aos cantos. O primeiro problema, entretanto, só poderia ser resolvido com a adição de um outro modelo, como o \textit{AvoidCollision} \cite{Omrane:2016}.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\hsize]{images/wallfollower2-circle.png}
+\caption{WallFollow - região circulada indica colisão}
+\label{fig:fig8}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\hsize]{images/wallfollower.png}
+\caption{WallFollow - modelagem relaxada}
+\label{fig:fig9}
+\end{figure}
+
+
+
+
+%******************************************************************************
+% Referências - Definidas no arquivo Relatorio.bib
+ +-------------+
+
+\bibliographystyle{IEEEtran}
+
+\bibliography{Relatorio}
+
+
+%******************************************************************************
+
+
+
+\end{document}

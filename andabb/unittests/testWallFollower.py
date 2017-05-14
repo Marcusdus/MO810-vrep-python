@@ -34,18 +34,16 @@ class FuzzyAvoidObstacleTest(unittest.TestCase):
         r = [0.002287745475769043, 0.5837858319282532, 0.6554442644119263, 2.0, 2.0]
         r = [1.8477439880371094e-06, 0.6196208596229553, 0.5751126408576965, 2.0, 0.5721331238746643]
         r = [2.6166439056396484e-05, 0.605690062046051, 0.13013604283332825, 2.0, 0.7041915655136108]
-        r = [1.8775463104248047e-05, 0.5848401188850403, 0.6766365170478821, 2.0, 2.0]
+        r = [0.5848401188850403, 0.6766365170478821, 2.0]
 
 
         ctr: FuzzyWallFollower = FuzzyWallFollower()
 
-        print(ctr.computeDelta(r[0], r[1], r[2], r[3], r[4]))
+        print(ctr.computeDelta(r[0], r[1], r[2]))
 
-        #ctr.leftFrontSensor.view(sim=ctr.sys)
         ctr.rightFrontSensor.view(sim=ctr.sys)
         ctr.sideSensor.view(sim=ctr.sys)
         ctr.diagSensor.view(sim=ctr.sys)
-        #ctr.deltaSide.view(sim=ctr.sys)
 
         ctr.angularCsq.view(sim=ctr.sys)
         ctr.linearCsq.view(sim=ctr.sys)

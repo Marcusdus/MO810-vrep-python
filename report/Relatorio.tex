@@ -67,7 +67,7 @@ Os controles implementados em Fuzzy mostram-se promissores, mas ainda apresentam
 
 \section{Introdução}
 
-Este projeto consiste no desenvolvimento de um sistema de controle para o \textit{Pioneer P3-DX} no simulador \textit{V-REP}. A implementação foi realizada em Python 3.5, com a utilização de algumas bibliotecas como o Scikit-fuzzy e Matplotlib. O código fonte pode ser obtido em https://github.com/luwood/MO810-vrep-python, as instruções de instalação se encontram no README do projeto. 
+Este projeto consiste no desenvolvimento de um sistema de controle para o \textit{Pioneer P3-DX} no simulador \textit{V-REP}. A implementação foi realizada em Python 3.5, com a utilização de algumas bibliotecas como o Scikit-fuzzy e Matplotlib. Os ciclos de atualização de leitura do sensores acontecem por padrão a cada 200ms. O código fonte pode ser obtido em https://github.com/luwood/MO810-vrep-python. As instruções de instalação se encontram no README do projeto. 
 
 Este artigo está dividido em três sessões principais, cada uma com sua apresentação e discussão dos resultados.
 
@@ -114,7 +114,7 @@ theta = addDelta(lastPose.orientation, \
 
 \subsection{Resultados}
 
-O gráfico comparando a posição real do robô e a posição calculada através da odometria pose ser visto na figura~\ref{fig:fig0}. É possível observar que o trajeto em linha reta obtido pela odometria é fiel a realidade. Porém assim que a primeira curva é realizada a diferença entre as posições começa a divegir. A diferença então que começa pouca, torna-se a cada iteração maior - devido aos erros acumulados. A tabela \ref{tab:tab1} mostra a evolução do erro no cálculo da orientação. 
+O gráfico comparando a posição real do robô e a posição calculada através da odometria pose ser visto na figura~\ref{fig:fig0}. É possível observar que o trajeto em linha reta obtido pela odometria é preciso. Porém assim que a primeira curva é realizada a diferença entre as posições começa a divergir. A diferença torna-se maior a cada iteração devido aos erros acumulados. A tabela \ref{tab:tab1} mostra a evolução do erro no cálculo da orientação durante um determinado período de teste. 
 
 \begin{table}[ht]
 \renewcommand{\arraystretch}{1.3}
@@ -228,11 +228,11 @@ As saídas do sistema são a velocidade angular - figura~\ref{fig:fig6} - e a velo
 
 \subsection{Resultados}
 
-O resultado obtido pode ser visto na figura~\ref{fig:fig8}. Note que todas as portas foram fechadas para simplificar o ambiente. O robô se mantém bem próximo a parede. Entretanto, ele não é capaz de lidar com situações nas quais existe um obstáculo em seu caminho. A região destacada por um circulo azul indica a colisão do robô com um armário. Isso acontece porque apesar de inicialmente o sensor frontal indicar que existe um objeto próximo e que uma curva a esquerda é necessária, assim que o objeto deixa de ser percebido pelo sensor frontal entram em ação as regras relativas a distância da parede. No caso, a distância do armário é capturada na diagonal e é uma distância maior do que a aceitável, levando o robô a tentar se aproximar. No momento em que a curva para a direita é ativada, o robô colide com a quina do móvel. 
+O resultado obtido pode ser visto na figura~\ref{fig:fig8}. Note que todas as portas foram fechadas para simplificar o ambiente. O robô se mantém bem próximo a parede. Entretanto, ele não é capaz de lidar com situações nas quais existe um obstáculo em seu caminho. A região destacada por um circulo azul indica a colisão do robô com um armário. Isso acontece porque apesar de inicialmente o sensor frontal indicar que existe um objeto próximo e que uma curva a esquerda é necessária, assim que o objeto deixa de ser percebido pelo sensor frontal entram em ação as regras relativas a distância da parede. No caso, a distância do armário é capturada na diagonal e é maior do que limite aceitável, levando o robô a tentar se aproximar. No momento em que a curva para a direita é ativada, o robô colide com a quina do móvel. 
 
 A figura ~\ref{fig:fig9} mostra uma versão mais relaxada das distâncias na modelagem dos sensores. O robô fica então muito mais distante da parede e realiza curvas muito abertas, porém é capaz de evitar obstáculos como os armários. Outras abordagens também foram exploradas, como a adição de uma variável de entrada que corresponde a diferença da distância da parede entre iterações, porém elas não resultaram em melhorias relevantes e portanto não serão abordadas nesta sessão.
 
-Pode-se concluir que apenas os três sensores e a modelagem Fuzzy não foram suficientes para fazer com que o robô tivesse um comportamento de seguir a parede sem nenhum problema. O robô está vulnerável a colidir com qualquer tipo de objeto que não é capturado pelo seu sensor frontal. Além disso, objetos no meio do caminho também podem levar a uma colisão indesejada. Para resolver o segundo problema o modelo poderia ser mais refinado para realizar curvas rentes aos cantos. O primeiro problema, entretanto, só poderia ser resolvido com a adição de um outro modelo, como o \textit{AvoidCollision} \cite{Omrane:2016}.
+Pode-se concluir que apenas os três sensores e a modelagem Fuzzy não foram suficientes para fazer com que o robô tivesse um comportamento de seguir a parede sem nenhum problema. O robô está vulnerável a colidir com qualquer tipo de objeto que não é capturado pelo seu sensor frontal. Além disso, objetos no meio do caminho também podem levar a uma colisão indesejada. Para resolver o segundo problema o modelo poderia ser refinado para realizar curvas rentes aos cantos. O primeiro problema, entretanto, só poderia ser resolvido com a adição de um outro modelo, como o \textit{AvoidCollision} \cite{Omrane:2016}.
 
 \begin{figure}[ht]
 \centering

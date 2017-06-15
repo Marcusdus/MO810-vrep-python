@@ -1,5 +1,6 @@
-from math import pi
+from math import acos
 from math import isclose
+from math import pi
 
 limit = 2 * pi
 
@@ -44,3 +45,14 @@ def addDelta(start, delta):
 
 def convertNegativePiUniverseTo360(angle):
     return (limit + angle) % limit
+
+
+def calculateFirstAngleFromTriangle(a, b, c):
+    '''
+    Calculates A angle given the triangle sides.
+    :param a: the length of the opposite side of angle A
+    :param b: the length of adjacent side to A
+    :param c: the length of adjacent side to A
+    :return: the angle in radians
+    '''
+    return acos(((b ** 2) + (c ** 2) - (a ** 2)) / (2 * b * c))

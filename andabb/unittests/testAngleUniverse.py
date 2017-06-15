@@ -2,8 +2,9 @@ import unittest
 from math import pi
 from math import radians
 
-from andabb.AngleUniverse import calculateDelta
 from andabb.AngleUniverse import addDelta
+from andabb.AngleUniverse import calculateDelta
+from andabb.AngleUniverse import calculateFirstAngleFromTriangle
 
 
 class AngleUniverTest(unittest.TestCase):
@@ -42,6 +43,9 @@ class AngleUniverTest(unittest.TestCase):
             with self.subTest('final position {} = {} + delta({})'.format(expected, start, delta)):
                 self.assertAlmostEqual(radians(expected), addDelta(radians(start), radians(delta)),
                                        delta=0.000001)
+
+    def testAngleFromTriangle(self):
+        self.assertAlmostEqual(radians(75.5), calculateFirstAngleFromTriangle(8, 6, 7), delta=0.001)
 
 
 if __name__ == '__main__':

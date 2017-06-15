@@ -2,6 +2,7 @@ import abc
 import logging
 from math import cos
 from math import sin
+from math import degrees
 from time import time
 
 from andabb.AngleUniverse import addDelta

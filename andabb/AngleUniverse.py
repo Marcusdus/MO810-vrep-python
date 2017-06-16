@@ -55,4 +55,9 @@ def calculateFirstAngleFromTriangle(a, b, c):
     :param c: the length of adjacent side to A
     :return: the angle in radians
     '''
-    return acos(((b ** 2) + (c ** 2) - (a ** 2)) / (2 * b * c))
+    cosineVal = ((b ** 2) + (c ** 2) - (a ** 2)) / (2 * b * c)
+    if cosineVal > 1:
+        cosineVal = 1
+    elif cosineVal < -1:
+        cosineVal = -1
+    return acos(cosineVal)

@@ -12,7 +12,9 @@ from .PoseUpdater import IPoseUpdater
 from .PositionListener import IPositionListener
 from .Robot import Pose
 from .Robot import Robot
+from .BaseDetectionListener import BaseDetector
 
+from math import degrees
 
 class RobotMonitor(threading.Thread):
     def __init__(self, robot: Robot, poseUpdater: IPoseUpdater, controller: ISensorBasedController,
@@ -27,6 +29,7 @@ class RobotMonitor(threading.Thread):
         self.positionListeners = []
         self.lastRobotPose = Pose()
         self.controller = controller
+        self.baseDetector = BaseDetector(self.robot)
 
     def run(self):
         while not self.stopEvent.is_set():
@@ -38,7 +41,9 @@ class RobotMonitor(threading.Thread):
         self.lastRobotPose = self.robot.pose
         self.robot.gtPose = self.gtPoseUpdater.update(self.robot)
         self.robot.pose = self.poseUpdater.update(self.robot)
-
+        b = self.baseDetector.detectBase()
+        print("base: {},{}".format(b.distance,degrees(b.angle)))
+        print("base {}".format(b.getAbsolutePosition(self.robot.gtPose)))
         self.readPosition()
 
         if self.controller:

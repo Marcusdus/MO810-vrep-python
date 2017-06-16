@@ -1,6 +1,11 @@
 from math import acos
+from math import cos
 from math import isclose
 from math import pi
+from math import sin
+
+from numpy import dot
+import scipy.ndimage
 
 limit = 2 * pi
 
@@ -61,3 +66,28 @@ def calculateFirstAngleFromTriangle(a, b, c):
     elif cosineVal < -1:
         cosineVal = -1
     return acos(cosineVal)
+
+
+def translateMatrix(dx, dy):
+    return [[1, 0, dx], [0, 1, dy], [0, 0, 1]]
+
+
+def rotateMatrix(alpha):
+    return [[cos(alpha), -sin(alpha), 0], [sin(alpha), cos(alpha), 0], [0, 0, 1]]
+
+def rotate(orignalP, alpha):
+    r = rotateMatrix(alpha)
+    return dot(r,orignalP)
+
+def translate(originalP, dx, dy):
+    t = translateMatrix(dx, dy)
+    return dot(t, originalP)
+
+def rotateAndTranslate(originalP, dx, dy, alpha):
+    b1 = rotate(originalP, alpha)
+    return translate(b1, dx, dy)
+
+
+def translateAndRotate(originalP, dx, dy, alpha):
+    b1 = translate(originalP, dx, dy)
+    return rotate(b1, alpha)

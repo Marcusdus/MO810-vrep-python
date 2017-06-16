@@ -28,7 +28,7 @@ class DetectedBase:
         y = cos(self.angle) * self.distance
         x = sin(self.angle) * self.distance
         print("x: {}, y: {}".format(x,y))
-        pos = translateAndRotate([x, y, 1], -pose.x, -pose.y, - pose.orientation)
+        pos = translateAndRotate([x, y, 1], pose.x, pose.y, - pose.orientation)
         return pos[0], pos[1]
 
 
@@ -69,7 +69,7 @@ def mdetectBase(leftDist, rightDist, frontDist):
     #nangle = pi - nangle
     print(degrees(nangle))
     if dist > frontDist:
-        return DetectedBase(dist, nangle)
+        return DetectedBase(dist, -nangle)
     # dist = sin(angle) * rightDist
     return DetectedBase(dist, nangle)
 

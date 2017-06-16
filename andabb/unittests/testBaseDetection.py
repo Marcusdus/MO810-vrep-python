@@ -19,22 +19,56 @@ class BaseDectition(unittest.TestCase):
         print("angle: {}".format(degrees(base.angle)))
         print(base.distance)
         print(base.getAbsolutePosition(Pose(3, 0, radians(0))))
-        print("-------- y neg")
-        base = mdetectBase(2.769779682159424, 3.10078763961792, 2.95050311088562)
-        print("angle: {}".format(degrees(base.angle)))
-        print(base.distance)
-        print(base.getAbsolutePosition(Pose(0, -3, radians(0))))
-        print("-------- y pos")
-        base = mdetectBase(2.1001908779144287, 1.7691807746887207, 1.9502599239349365)
-        print("angle: {}".format(degrees(base.angle)))
-        print(base.distance)
-        print(base.getAbsolutePosition(Pose(0, 2, radians(0))))
+        # print("-------- y neg")
+        # base = mdetectBase(2.769779682159424, 3.10078763961792, 2.95050311088562)
+        # print("angle: {}".format(degrees(base.angle)))
+        # print(base.distance)
+        # print(base.getAbsolutePosition(Pose(0, -3, radians(0))))
+        # print("-------- y pos")
+        # base = mdetectBase(2.1001908779144287, 1.7691807746887207, 1.9502599239349365)
+        # print("angle: {}".format(degrees(base.angle)))
+        # print(base.distance)
+        # print(base.getAbsolutePosition(Pose(0, 2, radians(0))))
         print("-------- 2; 4")
         base = mdetectBase(4.52399206161499, 4.226256370544434, 4.341597080230713)
         print("angle: {}".format(degrees(base.angle)))
         print(base.distance)
         print(base.getAbsolutePosition(Pose(2, 4, radians(0))))
         #1.0913840532302856, 0.949657142162323, 0.9203619360923767
+
+    def test4q0d(self):
+        print("-------- -0.5; 1")
+        base = mdetectBase(1.148566722869873, 0.8365228176116943, 1.1035438776016235)
+        print("angle: {}".format(degrees(base.angle)))
+        print(base.distance)
+        print(base.getAbsolutePosition(Pose(-0.5, 1, radians(0))))
+        print("-------- -5; 1")
+        base = mdetectBase(4.9440131187438965, 4.8806891441345215, 5.145285129547119)
+        print("angle: {}".format(degrees(base.angle)))
+        print(base.distance)
+        print(base.getAbsolutePosition(Pose(-5, 1, radians(0))))
+
+    def test3q0d(self):
+        print("-------- -5; -4")
+        base = mdetectBase(6.120367527008057, 6.3297505378723145, 6.417346000671387)
+        print("angle: {}".format(degrees(base.angle)))
+        print(base.distance)
+        print(base.getAbsolutePosition(Pose(-5, -4, radians(0))))
+
+
+    def test2q0d(self):
+        print("-------- 3; -2")
+        base = mdetectBase(3.408524513244629, 3.591799020767212, 3.4178686141967773)
+        print("angle: {}".format(degrees(base.angle)))
+        print(base.distance)
+        print(base.getAbsolutePosition(Pose(3, -2, radians(0))))
+
+    def test1q0d(self):
+        print("-------- 2; 4")
+        base = mdetectBase(4.5238800048828125, 4.226135730743408, 4.341493129730225)
+        print("angle: {}".format(degrees(base.angle)))
+        print(base.distance)
+        print(base.getAbsolutePosition(Pose(2, 4, radians(0))))
 
 
     def testSimple(self):

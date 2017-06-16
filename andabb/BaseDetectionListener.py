@@ -23,13 +23,13 @@ class DetectedBase:
     def getAbsolutePosition(self, pose: Pose):
         # return [pose.x + ((self.distance + (WHEELS_DIST / 2)) * cos(self.angle + pose.orientation)),
         #        pose.y + ((self.distance + (WHEELS_DIST / 2)) * sin(self.angle + pose.orientation))]
-        # return pose.x + (self.distance * cos(addDelta(self.angle, pose.orientation))), \
-        #       pose.y + (self.distance * sin(addDelta(self.angle, pose.orientation)))
-        y = cos(self.angle) * self.distance
-        x = sin(self.angle) * self.distance
-        print("x: {}, y: {}".format(x,y))
-        pos = translateAndRotate([x, y, 1], pose.x, pose.y, - pose.orientation)
-        return pos[0], pos[1]
+        return pose.x + (self.distance * cos(self.angle + pose.orientation)), \
+              pose.y + (self.distance * sin(self.angle + pose.orientation))
+        # y = cos(self.angle) * self.distance
+        # x = sin(self.angle) * self.distance
+        # print("x: {}, y: {}".format(x,y))
+        # pos = translateAndRotate([x, y, 1], pose.x, pose.y, - pose.orientation)
+        # return pos[0], pos[1]
 
 
 class BaseDetector:
@@ -37,39 +37,44 @@ class BaseDetector:
         self.robot = robot
         self.leftReceiver = "DistanceLeft"
         self.rightReceiver = "DistanceRight"
-        self.frontReceiver = "DistanceFront"
+        self.backReceiver = "DistanceBack"
 
     def detectBase(self) -> DetectedBase:
         leftDist = self.robot.sim.getDistance(self.leftReceiver)
         rightDist = self.robot.sim.getDistance(self.rightReceiver)
-        frontDist = self.robot.sim.getDistance(self.frontReceiver)
-        logging.debug("Base distance: {}, {}, {}".format(leftDist, rightDist, frontDist))
-
-        if leftDist == 0 or rightDist == 0:
+        backDist = self.robot.sim.getDistance(self.backReceiver)
+        if leftDist == 0 or rightDist == 0 or backDist == 0:
             return DetectedBase(0, 0)
-
-        angle = calculateFirstAngleFromTriangle(rightDist, WHEELS_DIST, leftDist)
-        rad = WHEELS_DIST / 2
-        dist = sqrt(leftDist ** 2 + rad ** 2 - (2 * leftDist * rad * cos(angle)))
-        nangle = asin((sin(angle) * leftDist) / dist)
-        nangle = pi - nangle
-        if dist > frontDist:
-            return DetectedBase(dist, pi-nangle)
-        return DetectedBase(dist, 0)
+        print("base: {}, {}, {}".format(leftDist, rightDist, backDist))
+        return mdetectBase(leftDist, rightDist, backDist)
 
 
-def mdetectBase(leftDist, rightDist, frontDist):
+def mdetectBase(leftDist, rightDist, backDist):
     angle = calculateFirstAngleFromTriangle(rightDist, WHEELS_DIST, leftDist)
     print("firstang: {}".format(degrees(angle)))
     # a2 = b2 + c2 − 2bc cosA
     rad = WHEELS_DIST / 2
     dist = sqrt(leftDist ** 2 + rad ** 2 - (2 * leftDist * rad * cos(angle)))
-    smallAngle = asin((sin(angle) * rad)/leftDist)
+    sinang = (sin(angle) * rad)/leftDist
+    if sinang > 1:
+        sinang = 1
+    elif sinang < -1:
+        sinang = -1
+    smallAngle = asin(sinang)
     nangle = pi - smallAngle - angle
-    #nangle = pi - nangle
+
     print(degrees(nangle))
-    if dist > frontDist:
-        return DetectedBase(dist, -nangle)
+
+    if 0 <= nangle <= (pi/2):
+        if backDist > dist:
+            nangle = (pi/2) - nangle
+        else:
+            nangle = (pi/2) + nangle
+    else:
+        if backDist > dist:
+            nangle = - (nangle - (pi/2))
+        else:
+            nangle = (pi/2) + nangle - (2*pi)
     # dist = sin(angle) * rightDist
     return DetectedBase(dist, nangle)
 

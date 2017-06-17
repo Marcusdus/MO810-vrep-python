@@ -12,7 +12,7 @@ from .PoseUpdater import IPoseUpdater
 from .PositionListener import IPositionListener
 from .Robot import Pose
 from .Robot import Robot
-from .BaseDetectionListener import BaseDetector
+from .BaseDetectionListener import BaseDetector, IBaseDetectionListener
 
 from math import degrees
 
@@ -27,6 +27,7 @@ class RobotMonitor(threading.Thread):
         self.stopEvent = stopEvent
         self.frontObjDetecListeners = []
         self.positionListeners = []
+        self.baseListeners = []
         self.lastRobotPose = Pose()
         self.controller = controller
         self.baseDetector = BaseDetector(self.robot)
@@ -38,14 +39,11 @@ class RobotMonitor(threading.Thread):
 
     def update(self):
         self.robot.updateSensors()
+        self.updateBaseListeners()
         self.lastRobotPose = self.robot.pose
         self.robot.gtPose = self.gtPoseUpdater.update(self.robot)
         self.robot.pose = self.poseUpdater.update(self.robot)
-        base = self.baseDetector.detectBase()
-        a = base.getAbsolutePosition(self.robot.gtPose)
-        if a[0] > 1 or a[1] > 1:
-            print("======> CASE")
-        print("base {}".format(a))
+
         self.readPosition()
 
         if self.controller:
@@ -70,12 +68,22 @@ class RobotMonitor(threading.Thread):
             else:
                 sensorReadings.append(2.0)
 
-        self.__frontObjectDetected(detectedObjs)
+        self._frontObjectDetected(detectedObjs)
         return sensorReadings
+
+    def updateBaseListeners(self):
+        base = self.baseDetector.detectBase()
+        a = base.getAbsolutePosition(self.robot.gtPose)
+        if a[0] > 1 or a[1] > 1:
+            print("======> CASE")
+        print("GT: {}".format(self.robot.gtPose))
+        print("GT base {}".format(a))
+        for l in self.baseListeners:
+            l.baseDetected(base)
 
     def readPosition(self):
         if self.lastRobotPose != self.robot.pose:
-            self.__positionChanged(self.robot.pose)
+            self._positionChanged(self.robot.pose)
 
     def subscribeToFrontObjectDetection(self, listener: IObjectDetectionListener):
         self.frontObjDetecListeners.append(listener)
@@ -83,10 +91,13 @@ class RobotMonitor(threading.Thread):
     def subscribeChangePosition(self, listener: IPositionListener):
         self.positionListeners.append(listener)
 
-    def __frontObjectDetected(self, detectedObjs: List[DetectedObject]):
+    def subscribeBaseDetection(self, listener: IBaseDetectionListener):
+        self.baseListeners.append(listener)
+
+    def _frontObjectDetected(self, detectedObjs: List[DetectedObject]):
         for l in self.frontObjDetecListeners:
             l.objectDetected(detectedObjs)
 
-    def __positionChanged(self, pose):
+    def _positionChanged(self, pose):
         for l in self.positionListeners:
             l.newPosition(pose)

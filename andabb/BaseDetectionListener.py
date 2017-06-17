@@ -1,9 +1,13 @@
 import abc
 import logging
+from math import atan2
+from math import sqrt
 
-from .AngleUniverse import calculatePoint
+from numpy import matrix
+
+from .AngleUniverse import calculatePoint, addDelta
 from .AngleUniverse import rotateAndTranslate
-from .PoseUpdater import Pose
+from .Robot import Pose
 from .Robot import Robot
 
 
@@ -11,11 +15,30 @@ class DetectedBase:
     def __init__(self, localX, localY):
         self.localX = localX
         self.localY = localY
+        self.realX = 0
+        self.realY = 0
 
     def getAbsolutePosition(self, pose: Pose):
+        #print("Here pose {}".format(pose))
         p = rotateAndTranslate([self.localX, self.localY, 1], pose.x, pose.y, pose.orientation)
         logging.debug("Global pos: {}".format(p))
         return p[0], p[1]
+
+    def getRealRangeAndBearing(self, pose: Pose):
+        return self._rangeAndBearing(self.realX, self.realY, pose)
+
+    def getEstimatedRangeAndBearing(self, pose: Pose):
+        x, y = self.getAbsolutePosition(pose)
+        return self._rangeAndBearing(x, y, pose)
+
+    def _rangeAndBearing(self, lx, ly, pose: Pose):
+        x = lx - pose.x
+        y = ly - pose.y
+        dist = sqrt((x ** 2) + (y ** 2))
+        bearing = addDelta(atan2(y, x), -pose.orientation)
+        #print(atan2(y, x))
+        #bearing = atan2(y, x) - pose.orientation
+        return matrix([[dist], [bearing]])
 
 
 class BaseDetector:
@@ -34,6 +57,9 @@ class BaseDetector:
         frontDist = self.robot.sim.getDistance(self.frontReceiver)
         if leftDist == 0 or rightDist == 0 or frontDist == 0:
             return DetectedBase(0, 0)
+        return self.calculateBase(leftDist, rightDist, frontDist)
+
+    def calculateBase(self, leftDist, rightDist, frontDist):
         logging.debug("base: {}, {}, {}".format(leftDist, rightDist, frontDist))
         p = calculatePoint(self.leftCoord, self.rightCoord, self.frontCoord, leftDist, rightDist, frontDist)
         logging.debug("Point: {}".format(p))

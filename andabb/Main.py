@@ -11,7 +11,7 @@ from .Simulator import Simulator
 from .WallFollower import FuzzyWallFollower
 from .plotrobot import plotRobot
 from .plotrobot import plotRobotAndObjects
-
+from .PoseUpdater import KalmanFilterPoseUpdater
 
 def parser():
     parser = argparse.ArgumentParser(description='Pioneer V-REP controller.')
@@ -20,6 +20,8 @@ def parser():
                         help='Controller to be used.')
     parser.add_argument('--odometry', action='store_true',
                         help='Use odometry to calculate the robot pose.')
+    parser.add_argument('--kalman', action='store_true',
+                        help='Use Kalman filter to calculate the robot pose.')
     parser.add_argument('--plot-odometry-vs-gt', action='store_true',
                         help='Plot odometry vs ground-truth. Please also set --odometry.')
     parser.add_argument("-v", "--verbose", help="increase output verbosity",
@@ -31,7 +33,7 @@ def main():
     args = parser().parse_args()
 
     if args.verbose:
-        logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+        logging.basicConfig(filename='output.log', level=logging.DEBUG, format='%(message)s')
     else:
         logging.basicConfig(level=logging.WARN)
 
@@ -51,8 +53,12 @@ def main():
     poseUpdater = GroundTruthPoseUpdater()
     if args.odometry:
         poseUpdater = OdometryPoseUpdater()
+    if args.kalman:
+        poseUpdater = KalmanFilterPoseUpdater(OdometryPoseUpdater())
 
     monitor = RobotMonitor(robot, poseUpdater, controller, stopEvent, 200)
+    if args.kalman:
+        monitor.subscribeBaseDetection(poseUpdater)
 
     if args.plot_odometry_vs_gt:
         plotThread = threading.Thread(target=plotRobot, args=(robot,))

@@ -37,9 +37,9 @@ class DetectedBase:
         #pos = rotateAndTranslate([self.x, self.y, 1], pose.x, pose.y, pose.orientation)
         #print("pos: {}".format(pos))
         #return pos[0], pos[1]
-        a = rotateAndTranslate([0.0445, WHEELS_DIST/2, 1], pose.x, pose.y, pose.orientation)
-        b = rotateAndTranslate([0.0445, -WHEELS_DIST/2, 1], pose.x, pose.y, pose.orientation)
-        c = rotateAndTranslate([-0.13, 0, 1], pose.x, pose.y, pose.orientation)
+        a = rotateAndTranslate([-0.15, 0.1, 1], pose.x, pose.y, pose.orientation)
+        b = rotateAndTranslate([-0.15, -0.1, 1], pose.x, pose.y, pose.orientation)
+        c = rotateAndTranslate([0.15, 0, 1], pose.x, pose.y, pose.orientation)
         #print(a)
         #print(b)
         #print(c)
@@ -51,9 +51,9 @@ class DetectedBase:
 class BaseDetector:
     def __init__(self, robot: Robot):
         self.robot = robot
-        self.leftReceiver = "DistanceLeft"
-        self.rightReceiver = "DistanceRight"
-        self.backReceiver = "DistanceBack"
+        self.leftReceiver = "t1"
+        self.rightReceiver = "t2"
+        self.backReceiver = "t0"
 
     def detectBase(self) -> DetectedBase:
         leftDist = self.robot.sim.getDistance(self.leftReceiver)
@@ -62,12 +62,13 @@ class BaseDetector:
         if leftDist == 0 or rightDist == 0 or backDist == 0:
             return DetectedBase(0, 0)
         print("base: {}, {}, {}".format(leftDist, rightDist, backDist))
-        p = calculatePoint([0, WHEELS_DIST / 2], [0, -WHEELS_DIST / 2], [-0.127, 0], leftDist, rightDist, backDist)
+        p = calculatePoint([-0.15, 0.1], [-0.15, -0.1], [0.15, 0], leftDist, rightDist, backDist)
         print("Point: {}".format(p))
         return mdetectBase(leftDist, rightDist, backDist)
 
 def mdetectBase(leftDist, rightDist, backDist):
-    p = calculatePoint([0.445, WHEELS_DIST/2], [0.0445, -WHEELS_DIST/2], [-0.127, 0], leftDist, rightDist, backDist)
+    #p = calculatePoint([0.445, WHEELS_DIST/2], [0.0445, -WHEELS_DIST/2], [-0.127, 0], leftDist, rightDist, backDist)
+    p = calculatePoint([-0.15, 0.1], [-0.15, -0.1], [0.15, 0], leftDist, rightDist, backDist)
     print("Point: {}".format(p))
     return DetectedBase(p[0], p[1], leftDist, rightDist, backDist)
     # rad = WHEELS_DIST / 2

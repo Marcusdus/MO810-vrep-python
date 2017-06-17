@@ -43,7 +43,11 @@ class RobotMonitor(threading.Thread):
         self.robot.pose = self.poseUpdater.update(self.robot)
         b = self.baseDetector.detectBase()
         print("base: {},{}".format(b.distance,degrees(b.angle)))
-        print("base {}".format(b.getAbsolutePosition(self.robot.gtPose)))
+        print("gt: {},{}, {}".format(self.robot.gtPose.x,self.robot.gtPose.y, degrees(self.robot.gtPose.orientation) ))
+        a = b.getAbsolutePosition(self.robot.gtPose)
+        if a[0] > 1 or a[1] > 1:
+            print("======> CASE")
+        print("base {}".format(a))
         self.readPosition()
 
         if self.controller:

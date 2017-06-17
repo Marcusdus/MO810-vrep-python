@@ -4,8 +4,11 @@ from math import isclose
 from math import pi
 from math import sin
 
+import numpy as np
 from numpy import dot
-import scipy.ndimage
+from numpy import linalg
+
+from scipy.optimize import lsq_linear
 
 limit = 2 * pi
 
@@ -61,11 +64,13 @@ def calculateFirstAngleFromTriangle(a, b, c):
     :return: the angle in radians
     '''
     cosineVal = ((b ** 2) + (c ** 2) - (a ** 2)) / (2 * b * c)
-    if cosineVal > 1:
-        cosineVal = 1
-    elif cosineVal < -1:
-        cosineVal = -1
+    if cosineVal > 1 or cosineVal < -1:
+        raise NoTriangleException()
     return acos(cosineVal)
+
+
+class NoTriangleException(ValueError):
+    pass
 
 
 def translateMatrix(dx, dy):
@@ -75,13 +80,16 @@ def translateMatrix(dx, dy):
 def rotateMatrix(alpha):
     return [[cos(alpha), -sin(alpha), 0], [sin(alpha), cos(alpha), 0], [0, 0, 1]]
 
+
 def rotate(orignalP, alpha):
     r = rotateMatrix(alpha)
-    return dot(r,orignalP)
+    return dot(r, orignalP)
+
 
 def translate(originalP, dx, dy):
     t = translateMatrix(dx, dy)
     return dot(t, originalP)
+
 
 def rotateAndTranslate(originalP, dx, dy, alpha):
     b1 = rotate(originalP, alpha)
@@ -91,3 +99,18 @@ def rotateAndTranslate(originalP, dx, dy, alpha):
 def translateAndRotate(originalP, dx, dy, alpha):
     b1 = translate(originalP, dx, dy)
     return rotate(b1, alpha)
+
+
+def calculatePoint(a, b, c, da, db, dc):
+    # np.array([(1, -1, 2), (0, 1, -1), (0, 0, 1)])
+    m = np.array([
+        (2 * (b[0] - a[0]), 2 * (b[1] - a[1])),
+        (2 * (c[0] - a[0]), 2 * (c[1] - a[1]))
+    ])
+    #print(m)
+    return linalg.solve(m, np.array(
+        [-(((a[0] ** 2) - (b[0] ** 2)) + ((a[1] ** 2) - (b[1] ** 2)) - ((da ** 2) - (db ** 2))),
+         -(((a[0] ** 2) - (c[0] ** 2)) + ((a[1] ** 2) - (c[1] ** 2)) - ((da ** 2) - (dc ** 2)))]))
+    # return lsq_linear(m, np.array(
+    #     [-(((a[0] ** 2) - (b[0] ** 2)) + ((a[1] ** 2) - (b[1] ** 2)) - ((da ** 2) - (db ** 2))),
+    #      -(((a[0] ** 2) - (c[0] ** 2)) + ((a[1] ** 2) - (c[1] ** 2)) - ((da ** 2) - (dc ** 2)))])).x

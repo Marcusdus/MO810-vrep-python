@@ -1,7 +1,7 @@
 import abc
 import logging
 from math import atan2
-from math import sqrt
+from math import sqrt, degrees
 
 from numpy import matrix
 
@@ -24,12 +24,18 @@ class DetectedBase:
         logging.debug("Global pos: {}".format(p))
         return p[0], p[1]
 
-    def getRealRangeAndBearing(self, pose: Pose):
+    def _getRealRangeAndBearing(self, pose: Pose):
         return self._rangeAndBearing(self.realX, self.realY, pose)
 
-    def getEstimatedRangeAndBearing(self, pose: Pose):
+    def _getEstimatedRangeAndBearing(self, pose: Pose):
         x, y = self.getAbsolutePosition(pose)
         return self._rangeAndBearing(x, y, pose)
+
+    def calculateResidualRangeAndBearing(self, pose:Pose):
+        estimatedDist, estimatedBearing = self._getEstimatedRangeAndBearing(pose)
+        realDist, realBearing = self._getRealRangeAndBearing(pose)
+        return matrix([[estimatedDist - realDist],
+                       [addDelta(estimatedBearing, -realBearing)]])
 
     def _rangeAndBearing(self, lx, ly, pose: Pose):
         x = lx - pose.x
@@ -38,7 +44,8 @@ class DetectedBase:
         bearing = addDelta(atan2(y, x), -pose.orientation)
         #print(atan2(y, x))
         #bearing = atan2(y, x) - pose.orientation
-        return matrix([[dist], [bearing]])
+        logging.debug("range and bearing {}, {} degrees, {}".format(dist, degrees(bearing), bearing))
+        return dist, bearing
 
 
 class BaseDetector:

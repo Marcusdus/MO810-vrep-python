@@ -136,26 +136,22 @@ class KalmanFilterPoseUpdater(IPoseUpdater, IBaseDetectionListener):
         logging.debug("vt: {}".format(vt))
         logging.debug("covDt: {}".format(covDt))
 
-        covariance = ((gt * self.lastCovariance) * transpose(gt)) + ((vt * covDt) * transpose(vt)) + rt
+        predictCov = ((gt * self.lastCovariance) * transpose(gt)) + ((vt * covDt) * transpose(vt)) + rt
 
         # Update step
         base = self.lastDetectedBase
         ht = self._htMatrix(base, pose.x, pose.y)
         qt = self._qtMatrix()
-        m = inv(((ht * covariance) * transpose(ht)) + qt)
-        kt = (covariance * transpose(ht)) * m
+        m = inv(((ht * predictCov) * transpose(ht)) + qt)
+        kt = (predictCov * transpose(ht)) * m
 
-        eb = base.getEstimatedRangeAndBearing(pose)
-        rb = base.getRealRangeAndBearing(pose)
+        inova = base.calculateResidualRangeAndBearing(pose)
 
-        inova = eb - rb
-
+        logging.debug("predicCov: {}".format(predictCov))
         logging.debug("ht: {}".format(ht))
         logging.debug("qt: {}".format(qt))
         logging.debug("m: {}".format(m))
         logging.debug("kt: {}".format(kt))
-        logging.debug(eb)
-        logging.debug(rb)
         logging.debug("inova: {}".format(inova))
 
         addPose = kt * inova
@@ -172,7 +168,7 @@ class KalmanFilterPoseUpdater(IPoseUpdater, IBaseDetectionListener):
         if abs(addDelta(p.orientation, -robot.gtPose.orientation)) > 15:
             logging.debug("Theta big diff")
         #logging.debug("Kalman {}".format(p))
-        self.lastCovariance = (self.I - (kt * ht)) * covariance
+        self.lastCovariance = (self.I - (kt * ht)) * predictCov
         self.odometryUpdater.lastPose = self.lastPose
         return self.lastPose
 

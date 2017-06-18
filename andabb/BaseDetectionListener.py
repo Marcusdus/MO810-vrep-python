@@ -5,7 +5,7 @@ from math import sqrt, degrees
 
 from numpy import matrix
 
-from .AngleUniverse import calculatePoint, addDelta
+from .AngleUniverse import calculatePoint, subAngles
 from .AngleUniverse import rotateAndTranslate
 from .Robot import Pose
 from .Robot import Robot
@@ -35,15 +35,16 @@ class DetectedBase:
         estimatedDist, estimatedBearing = self._getEstimatedRangeAndBearing(pose)
         realDist, realBearing = self._getRealRangeAndBearing(pose)
         return matrix([[estimatedDist - realDist],
-                       [addDelta(estimatedBearing, -realBearing)]])
+                       [subAngles(estimatedBearing, realBearing)]])
 
     def _rangeAndBearing(self, lx, ly, pose: Pose):
         x = lx - pose.x
         y = ly - pose.y
         dist = sqrt((x ** 2) + (y ** 2))
-        bearing = addDelta(atan2(y, x), -pose.orientation)
+        bearing = subAngles(atan2(y, x), pose.orientation)
         #print(atan2(y, x))
         #bearing = atan2(y, x) - pose.orientation
+        logging.debug("x{}, y{}, lx {}, ly{}".format(pose.x, pose.y, lx, ly))
         logging.debug("range and bearing {}, {} degrees, {}".format(dist, degrees(bearing), bearing))
         return dist, bearing
 

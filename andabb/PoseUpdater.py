@@ -192,8 +192,8 @@ class KalmanFilterPoseUpdater(IPoseUpdater, IBaseDetectionListener):
                        [0, kt * abs(deltaTheta)]])
 
     def _rtMatrix(self):
-        errorX = 5
-        errorY = 5
+        errorX = 1
+        errorY = 1
         errorTheta = 1
         return matrix([[errorX ** 2, 0, 0],
                        [0, errorY ** 2, 0],

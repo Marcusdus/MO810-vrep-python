@@ -97,7 +97,6 @@ class KalmanFilterPoseUpdater(IPoseUpdater, IBaseDetectionListener):
     def __init__(self, odometryUpdater: OdometryPoseUpdater):
         self.odometryUpdater = odometryUpdater
         self.lastPose = Pose()
-        self.lastTimestamp = time()
         self.start = True
         self.lastDetectedBase = DetectedBase(0, 0)
         self.lastCovariance = matrix([[0, 0, 0],
@@ -109,18 +108,15 @@ class KalmanFilterPoseUpdater(IPoseUpdater, IBaseDetectionListener):
 
     def update(self, robot: Robot):
         pose = self.odometryUpdater.update(robot)
-        vR = self.odometryUpdater.vR
-        vL = self.odometryUpdater.vL
+
         deltaTheta = self.odometryUpdater.deltaTheta
         deltaSpace = self.odometryUpdater.deltaSpace
         base = self.lastDetectedBase
-        now = time()
 
         if self.start:
             self.lastPose = robot.gtPose
             logging.debug("Start pose: {}".format(robot.gtPose))
-            self.lastTimestamp = now
-            self.start = self.lastPose.isZero() or (vR == 0 and vL == 0) or (base.localY == 0 and base.localX == 0)
+            self.start = self.lastPose.isZero() or (base.localY == 0 and base.localX == 0)
             return self.lastPose
 
         logging.debug("before kalman: pose {}, gt{}".format(pose, robot.gtPose))

@@ -1,4 +1,3 @@
-import datetime
 import logging
 import math
 import threading
@@ -38,7 +37,6 @@ class RobotMonitor(threading.Thread):
             sleep(self.intervalSeconds)
 
     def update(self):
-        start = datetime.datetime.now()
         self.robot.updateSensors()
         self.updateBaseListeners()
         self.lastRobotPose = self.robot.pose
@@ -51,8 +49,6 @@ class RobotMonitor(threading.Thread):
             lspeed, aspeed = self.controller.compute(self.readSonarReadings())
             logging.debug("Speed: {}, Ang:{} ".format(lspeed, aspeed))
             self.robot.drive(lspeed, aspeed)
-
-        print(datetime.datetime.now() - start)
 
     def readSonarReadings(self):
         # 0: 90

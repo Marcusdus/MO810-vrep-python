@@ -36,7 +36,7 @@ def main():
     args = parser().parse_args()
 
     if args.verbose:
-        logging.basicConfig(filename='output.log', level=logging.DEBUG, format='%(message)s')
+        logging.basicConfig(level=logging.DEBUG, format='%(message)s')
     else:
         logging.basicConfig(level=logging.WARN)
 

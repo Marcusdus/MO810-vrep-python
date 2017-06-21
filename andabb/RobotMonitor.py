@@ -1,9 +1,11 @@
-import math
+import datetime
 import logging
+import math
 import threading
 from time import sleep
 from typing import List
 
+from .BaseDetectionListener import BaseDetector, IBaseDetectionListener
 from .ISensorBasedController import ISensorBasedController
 from .ObjectDetectionListener import DetectedObject
 from .ObjectDetectionListener import IObjectDetectionListener
@@ -12,9 +14,7 @@ from .PoseUpdater import IPoseUpdater
 from .PositionListener import IPositionListener
 from .Robot import Pose
 from .Robot import Robot
-from .BaseDetectionListener import BaseDetector, IBaseDetectionListener
 
-from math import degrees
 
 class RobotMonitor(threading.Thread):
     def __init__(self, robot: Robot, poseUpdater: IPoseUpdater, controller: ISensorBasedController,
@@ -38,6 +38,7 @@ class RobotMonitor(threading.Thread):
             sleep(self.intervalSeconds)
 
     def update(self):
+        start = datetime.datetime.now()
         self.robot.updateSensors()
         self.updateBaseListeners()
         self.lastRobotPose = self.robot.pose
@@ -50,6 +51,8 @@ class RobotMonitor(threading.Thread):
             lspeed, aspeed = self.controller.compute(self.readSonarReadings())
             logging.debug("Speed: {}, Ang:{} ".format(lspeed, aspeed))
             self.robot.drive(lspeed, aspeed)
+
+        print(datetime.datetime.now() - start)
 
     def readSonarReadings(self):
         # 0: 90
@@ -73,11 +76,6 @@ class RobotMonitor(threading.Thread):
 
     def updateBaseListeners(self):
         base = self.baseDetector.detectBase()
-        a = base.getAbsolutePosition(self.robot.gtPose)
-        if a[0] > 1 or a[1] > 1:
-            print("======> CASE")
-        print("GT: {}".format(self.robot.gtPose))
-        print("GT base {}".format(a))
         for l in self.baseListeners:
             l.baseDetected(base)
 

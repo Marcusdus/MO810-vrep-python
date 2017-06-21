@@ -10,7 +10,7 @@ from numpy import matrix
 from numpy import transpose
 from numpy.linalg import inv
 
-from andabb.AngleUniverse import addDelta
+from andabb.AngleUniverse import addDelta, addAngles
 from .BaseDetectionListener import IBaseDetectionListener, DetectedBase
 from .Robot import Pose
 from .Robot import Robot
@@ -36,7 +36,7 @@ class GroundTruthPoseUpdater(IPoseUpdater):
         position = robot.sim.getObjectPosition(robot.handle)
         orientation = robot.sim.getObjectOrientation(robot.handle)
         p = Pose(position[0], position[1], orientation[2])
-        #logging.debug("GT pose: {}".format(p))
+        # logging.debug("GT pose: {}".format(p))
 
         return Pose(position[0], position[1], orientation[2])
 
@@ -122,16 +122,10 @@ class KalmanFilterPoseUpdater(IPoseUpdater, IBaseDetectionListener):
         logging.debug("before kalman: pose {}, gt{}".format(pose, robot.gtPose))
 
         # Prediction step
-
         gt = self._gtMatrix(pose.orientation, deltaTheta, deltaSpace)
         vt = self._vtMatrix(pose.orientation, deltaTheta, deltaSpace)
         covDt = self._covarianceDTMatrix(deltaTheta, deltaSpace)
         rt = self._rtMatrix()
-
-        logging.debug("gt: {}".format(gt))
-        logging.debug("vt: {}".format(vt))
-        logging.debug("covDt: {}".format(covDt))
-
         predictCov = ((gt * self.lastCovariance) * transpose(gt)) + ((vt * covDt) * transpose(vt)) + rt
 
         # Update step
@@ -142,40 +136,32 @@ class KalmanFilterPoseUpdater(IPoseUpdater, IBaseDetectionListener):
         kt = (predictCov * transpose(ht)) * m
 
         inova = base.calculateResidualRangeAndBearing(pose)
-
-        logging.debug("predicCov: {}".format(predictCov))
-        logging.debug("ht: {}".format(ht))
-        logging.debug("qt: {}".format(qt))
-        logging.debug("m: {}".format(m))
-        logging.debug("kt: {}".format(kt))
         logging.debug("inova: {}".format(inova))
 
         addPose = kt * inova
-        logging.debug("addPose: {}".format(addPose))
+
         logging.debug(float(addPose[0][0]))
         self.lastPose = Pose(pose.x + float(addPose[0][0]), pose.y + float(addPose[1][0]),
-                             pose.orientation + float(addPose[2][0]))
-        p = self.lastPose
-        logging.debug("after kalman: pose {}, gt{}".format(p, robot.gtPose))
-        if abs(p.x - robot.gtPose.x) > 1:
-            logging.debug("X big diff")
-        if abs(p.y - robot.gtPose.y) > 1:
-            logging.debug("Y big diff")
-        if abs(addDelta(p.orientation, -robot.gtPose.orientation)) > 15:
-            logging.debug("Theta big diff")
-        #logging.debug("Kalman {}".format(p))
+                             addAngles(pose.orientation, float(addPose[2][0])))
+        logging.debug("after kalman: pose {}, gt{}".format(self.lastPose, robot.gtPose))
+
+        # Updating covariance
         self.lastCovariance = (self.I - (kt * ht)) * predictCov
+
+        # Updating odometry
         self.odometryUpdater.lastPose = self.lastPose
+
         return self.lastPose
 
+
     def _gtMatrix(self, prevTheta, deltaTheta, deltaSpace):
-        ang = addDelta(prevTheta, (deltaTheta/2))
+        ang = addAngles(prevTheta, (deltaTheta / 2))
         return matrix([[1, 0, -deltaSpace * sin(ang)],
                        [0, 1, deltaSpace * cos(ang)],
                        [0, 0, 1]])
 
     def _vtMatrix(self, prevTheta, deltaTheta, deltaSpace):
-        ang = addDelta(prevTheta, (deltaTheta / 2))
+        ang = addAngles(prevTheta, (deltaTheta / 2))
         sp = deltaSpace / (2 * WHEELS_DIST)
         return matrix([[(0.5 * cos(ang)) - (sp * sin(ang)), (0.5 * cos(ang) + (sp * sin(ang)))],
                        [(0.5 * sin(ang)) + (sp * cos(ang)), (0.5 * sin(ang) - (sp * cos(ang)))],

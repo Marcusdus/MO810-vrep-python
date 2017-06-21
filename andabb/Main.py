@@ -24,8 +24,9 @@ def parser():
                         help='Use Kalman filter to calculate the robot pose.')
     parser.add_argument('--plot-odometry-vs-gt', action='store_true',
                         help='Plot odometry vs ground-truth. Please also set --odometry.')
-    parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                        action="store_true")
+    parser.add_argument('-p', '--port', type=int, help='V-REP remote API port.', default=25000)
+    parser.add_argument('-v', '--verbose', help='increase output verbosity',
+                        action='store_true')
     return parser
 
 
@@ -37,7 +38,7 @@ def main():
     else:
         logging.basicConfig(level=logging.WARN)
 
-    sim = Simulator()
+    sim = Simulator(port=args.port)
     sim.connect()
 
     robot = rb.newPioonerRobot(sim)

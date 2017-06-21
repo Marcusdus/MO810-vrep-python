@@ -91,6 +91,19 @@ class Simulator:
         retcode = vrep.simxSetJointTargetVelocity(self.id, handle, velocity, vrep.simx_opmode_streaming)
         self.__assertSimxSuccessRet(retcode)
 
+    def __getDistanceHandle(self, name):
+        retcode, ret = vrep.simxGetDistanceHandle(self.id, name, vrep.simx_opmode_streaming)
+        self.__assertSimxSuccessRet(retcode)
+        return ret
+
+    @connected
+    def getDistance(self, name):
+        # We always need to get the handle before reading.
+        handle = self.__getDistanceHandle(name)
+        retcode, ret = vrep.simxReadDistance(self.id, handle, vrep.simx_opmode_streaming)
+        self.__assertSimxSuccessRet(retcode)
+        return ret
+
     def __assertSimxSuccessRet(self, simxRet):
         if simxRet != vrep.simx_return_ok and simxRet != vrep.simx_return_novalue_flag:
             raise Exception("Error in Remote API return: {}".format(simxRet))

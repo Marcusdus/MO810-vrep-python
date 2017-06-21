@@ -1,9 +1,10 @@
-import math
 import logging
+import math
 import threading
 from time import sleep
 from typing import List
 
+from .BaseDetectionListener import BaseDetector, IBaseDetectionListener
 from .ISensorBasedController import ISensorBasedController
 from .ObjectDetectionListener import DetectedObject
 from .ObjectDetectionListener import IObjectDetectionListener
@@ -25,8 +26,10 @@ class RobotMonitor(threading.Thread):
         self.stopEvent = stopEvent
         self.frontObjDetecListeners = []
         self.positionListeners = []
+        self.baseListeners = []
         self.lastRobotPose = Pose()
         self.controller = controller
+        self.baseDetector = BaseDetector(self.robot)
 
     def run(self):
         while not self.stopEvent.is_set():
@@ -35,6 +38,7 @@ class RobotMonitor(threading.Thread):
 
     def update(self):
         self.robot.updateSensors()
+        self.updateBaseListeners()
         self.lastRobotPose = self.robot.pose
         self.robot.gtPose = self.gtPoseUpdater.update(self.robot)
         self.robot.pose = self.poseUpdater.update(self.robot)
@@ -63,12 +67,17 @@ class RobotMonitor(threading.Thread):
             else:
                 sensorReadings.append(2.0)
 
-        self.__frontObjectDetected(detectedObjs)
+        self._frontObjectDetected(detectedObjs)
         return sensorReadings
+
+    def updateBaseListeners(self):
+        base = self.baseDetector.detectBase()
+        for l in self.baseListeners:
+            l.baseDetected(base)
 
     def readPosition(self):
         if self.lastRobotPose != self.robot.pose:
-            self.__positionChanged(self.robot.pose)
+            self._positionChanged(self.robot.pose)
 
     def subscribeToFrontObjectDetection(self, listener: IObjectDetectionListener):
         self.frontObjDetecListeners.append(listener)
@@ -76,10 +85,13 @@ class RobotMonitor(threading.Thread):
     def subscribeChangePosition(self, listener: IPositionListener):
         self.positionListeners.append(listener)
 
-    def __frontObjectDetected(self, detectedObjs: List[DetectedObject]):
+    def subscribeBaseDetection(self, listener: IBaseDetectionListener):
+        self.baseListeners.append(listener)
+
+    def _frontObjectDetected(self, detectedObjs: List[DetectedObject]):
         for l in self.frontObjDetecListeners:
             l.objectDetected(detectedObjs)
 
-    def __positionChanged(self, pose):
+    def _positionChanged(self, pose):
         for l in self.positionListeners:
             l.newPosition(pose)

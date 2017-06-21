@@ -37,7 +37,7 @@ setup(
 
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
 
-    install_requires=['numpy', 'scipy', 'scikit-fuzzy', 'matplotlib'],
+    install_requires=['numpy', 'scipy', 'scikit-fuzzy', 'matplotlib', 'bottle'],
 
     entry_points={
         'console_scripts': [

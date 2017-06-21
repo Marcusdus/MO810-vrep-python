@@ -12,6 +12,7 @@ from .WallFollower import FuzzyWallFollower
 from .plotrobot import plotRobot
 from .plotrobot import plotRobotAndObjects
 from .PoseUpdater import KalmanFilterPoseUpdater
+from .RestServer import RestServer
 
 def parser():
     parser = argparse.ArgumentParser(description='Pioneer V-REP controller.')
@@ -38,6 +39,8 @@ def main():
     else:
         logging.basicConfig(level=logging.WARN)
 
+    server = RestServer(host='localhost', port=8090)
+
     sim = Simulator(port=args.port)
     sim.connect()
 
@@ -61,6 +64,8 @@ def main():
     if args.kalman:
         monitor.subscribeBaseDetection(poseUpdater)
 
+    monitor.subscribeChangePosition(server)
+
     if args.plot_odometry_vs_gt:
         plotThread = threading.Thread(target=plotRobot, args=(robot,))
     else:
@@ -68,6 +73,7 @@ def main():
 
     monitor.start()
     plotThread.start()
+    server.start()
 
     try:
         while monitor.is_alive():

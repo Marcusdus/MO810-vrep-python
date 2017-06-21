@@ -8,8 +8,6 @@ import numpy as np
 from numpy import dot
 from numpy import linalg
 
-from scipy.optimize import lsq_linear
-
 limit = 2 * pi
 
 
@@ -50,11 +48,13 @@ def addDelta(start, delta):
         return ans - limit
     return ans
 
+
 def addAngles(alpha, beta):
     a = to360Universe(alpha)
     b = to360Universe(beta)
     c = a + b
     return to180Universe(c)
+
 
 def subAngles(alpha, beta):
     a = to360Universe(alpha)
@@ -62,16 +62,19 @@ def subAngles(alpha, beta):
     c = a - b
     return to180Universe(c)
 
+
 def to180Universe(alpha):
     alpha = alpha % (2 * pi)
     if alpha > pi:
         return alpha - (2 * pi)
     return alpha
 
+
 def to360Universe(alpha):
     if alpha < 0:
         return (2 * pi) + alpha
     return alpha
+
 
 def convertNegativePiUniverseTo360(angle):
     return (limit + angle) % limit
@@ -124,15 +127,11 @@ def translateAndRotate(originalP, dx, dy, alpha):
 
 
 def calculatePoint(a, b, c, da, db, dc):
-    # np.array([(1, -1, 2), (0, 1, -1), (0, 0, 1)])
     m = np.array([
         (2 * (b[0] - a[0]), 2 * (b[1] - a[1])),
         (2 * (c[0] - a[0]), 2 * (c[1] - a[1]))
     ])
-    #print(m)
+
     return linalg.solve(m, np.array(
         [-(((a[0] ** 2) - (b[0] ** 2)) + ((a[1] ** 2) - (b[1] ** 2)) - ((da ** 2) - (db ** 2))),
          -(((a[0] ** 2) - (c[0] ** 2)) + ((a[1] ** 2) - (c[1] ** 2)) - ((da ** 2) - (dc ** 2)))]))
-    # return lsq_linear(m, np.array(
-    #     [-(((a[0] ** 2) - (b[0] ** 2)) + ((a[1] ** 2) - (b[1] ** 2)) - ((da ** 2) - (db ** 2))),
-    #      -(((a[0] ** 2) - (c[0] ** 2)) + ((a[1] ** 2) - (c[1] ** 2)) - ((da ** 2) - (dc ** 2)))])).x

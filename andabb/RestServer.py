@@ -1,7 +1,10 @@
-from bottle import Bottle, route, run, template
+from math import degrees
+
+from bottle import Bottle
+
 from .PositionListener import IPositionListener
 from .Robot import Pose
-from math import degrees
+
 
 class RestServer(IPositionListener):
     def __init__(self, host, port):

@@ -5,14 +5,15 @@ import threading
 import andabb.Robot as rb
 from .AvoidObstacle import FuzzyAvoidObstacle
 from .PoseUpdater import GroundTruthPoseUpdater
+from .PoseUpdater import KalmanFilterPoseUpdater
 from .PoseUpdater import OdometryPoseUpdater
+from .RestServer import RestServer
 from .RobotMonitor import RobotMonitor
 from .Simulator import Simulator
 from .WallFollower import FuzzyWallFollower
 from .plotrobot import plotRobot
 from .plotrobot import plotRobotAndObjects
-from .PoseUpdater import KalmanFilterPoseUpdater
-from .RestServer import RestServer
+
 
 def parser():
     parser = argparse.ArgumentParser(description='Pioneer V-REP controller.')

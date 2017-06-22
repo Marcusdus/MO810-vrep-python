@@ -1,16 +1,12 @@
 import math
-import threading
 from typing import List
 
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import transforms
 
-import andabb.Robot as rb
 from .ObjectDetectionListener import DetectedObject
 from .ObjectDetectionListener import IObjectDetectionListener
-from .PoseUpdater import OdometryPoseUpdater
 from .PoseUpdater import Pose
 from .PositionListener import IPositionListener
 from .Robot import Robot
@@ -129,5 +125,3 @@ def plotRobot(robot: Robot, intervalMs=500):
 
     # To save the animation, use the command: line_ani.save('lines.mp4')
     plt.show()
-
-

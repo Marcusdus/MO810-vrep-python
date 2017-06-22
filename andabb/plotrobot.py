@@ -5,6 +5,7 @@ from typing import List
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import transforms
 
 import andabb.Robot as rb
 from .ObjectDetectionListener import DetectedObject
@@ -106,16 +107,23 @@ def update_line(num, robot: Robot, robotLine, gtLine):
 def plotRobot(robot: Robot, intervalMs=500):
     fig1 = plt.figure()
 
-    robotLine, = plt.plot([], [], 'ro', label='robot')
+    robotLine, = plt.plot([], [], 'ro', label='Estimated')
     robotLine.set_markersize(1)
-    gtLine, = plt.plot([], [], 'bo', label='gt')
+    gtLine, = plt.plot([], [], 'bo', label='Ground Truth')
     gtLine.set_markersize(1)
 
     plt.xlim(-10, 10)
     plt.ylim(-10, 10)
     plt.xlabel('x')
     plt.ylabel('y')
-    plt.title('Odometry vs GT')
+    plt.title('Estimated Pose vs Ground Truth')
+    plt.gca().invert_xaxis()
+
+    leg = plt.legend(bbox_to_anchor=(1.1, 1.05))
+    for l in leg.get_lines():
+        l.set_marker('.')
+        l.set_markersize(5)
+
     line_ani = animation.FuncAnimation(fig1, update_line, None, fargs=(robot, robotLine, gtLine),
                                        interval=intervalMs, blit=True, repeat=False)
 

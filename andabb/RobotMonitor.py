@@ -71,9 +71,9 @@ class RobotMonitor(threading.Thread):
         return sensorReadings
 
     def updateBaseListeners(self):
-        base = self.baseDetector.detectBase()
+        bases = self.baseDetector.detectBase()
         for l in self.baseListeners:
-            l.baseDetected(base)
+            l.baseDetected(bases)
 
     def readPosition(self):
         if self.lastRobotPose != self.robot.pose:

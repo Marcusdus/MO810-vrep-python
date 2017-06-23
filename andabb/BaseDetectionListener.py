@@ -18,6 +18,7 @@ class RealLandmark:
         self.realX = realX
         self.realY = realY
 
+
 class DetectedBase:
     def __init__(self, realLandmark: RealLandmark, localX, localY):
         self.localX = localX
@@ -51,8 +52,9 @@ class DetectedBase:
 
 
 class BaseDetector:
-    def __init__(self, robot: Robot):
+    def __init__(self, robot: Robot, numberOfBases):
         self.robot = robot
+        self.numberOfBases = numberOfBases
         self.leftReceiver = "Left"
         self.rightReceiver = "Right"
         self.frontReceiver = "Front"
@@ -64,8 +66,14 @@ class BaseDetector:
         self.base1 = RealLandmark("Base1", 4.0, 6.0)
 
     def detectBase(self):
-        return self._detectBase(self.base), self._detectBase(self.base0), self._detectBase(self.base1)
-        #return [self._detectBase(self.base2)]
+        if self.numberOfBases is None or self.numberOfBases == 0:
+            return []
+        elif self.numberOfBases == 1:
+            return [self._detectBase(self.base)]
+        elif self.numberOfBases == 2:
+            return self._detectBase(self.base), self._detectBase(self.base0),
+        else:
+            return self._detectBase(self.base), self._detectBase(self.base0), self._detectBase(self.base1)
 
     def _detectBase(self, realLandmark: RealLandmark):
         leftDist = self.robot.sim.getDistance(realLandmark.name + self.leftReceiver)
@@ -85,4 +93,3 @@ class IBaseDetectionListener(object, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def baseDetected(self, bases: List[DetectedBase]):
         raise NotImplementedError('users must define baseDetected to use this base class')
-

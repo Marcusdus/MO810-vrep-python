@@ -16,7 +16,7 @@ from .Robot import Robot
 
 
 class RobotMonitor(threading.Thread):
-    def __init__(self, robot: Robot, poseUpdater: IPoseUpdater, controller: ISensorBasedController,
+    def __init__(self, robot: Robot, poseUpdater: IPoseUpdater, controller: ISensorBasedController, baseDetector: BaseDetector,
                  stopEvent: threading.Event, intervalMs=200):
         threading.Thread.__init__(self)
         self.robot = robot
@@ -29,7 +29,7 @@ class RobotMonitor(threading.Thread):
         self.baseListeners = []
         self.lastRobotPose = Pose()
         self.controller = controller
-        self.baseDetector = BaseDetector(self.robot)
+        self.baseDetector = baseDetector
 
     def run(self):
         while not self.stopEvent.is_set():

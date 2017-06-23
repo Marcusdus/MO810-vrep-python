@@ -58,11 +58,12 @@ class BaseDetector:
         self.leftCoord = [-0.15, 0.1]
         self.rightCoord = [-0.15, -0.1]
         self.frontCoord = [0.1, 0]
-        self.base1 = RealLandmark("Base", 0.0, 0.0)
-        self.base2 = RealLandmark("Base2", 3.0, -3.0)
+        self.base = RealLandmark("Base", 0.0, 0.0)
+        self.base0 = RealLandmark("Base0", 3.0, -3.0)
+        self.base1 = RealLandmark("Base1", 4.0, 6.0)
 
     def detectBase(self):
-        return self._detectBase(self.base1), self._detectBase(self.base2)
+        return self._detectBase(self.base), self._detectBase(self.base0), self._detectBase(self.base1)
         #return [self._detectBase(self.base2)]
 
     def _detectBase(self, realLandmark: RealLandmark):

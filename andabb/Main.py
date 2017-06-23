@@ -3,6 +3,7 @@ import logging
 import threading
 
 import andabb.Robot as rb
+from andabb.BaseDetectionListener import BaseDetector
 from .AvoidObstacle import FuzzyAvoidObstacle
 from .PoseUpdater import GroundTruthPoseUpdater
 from .PoseUpdater import KalmanFilterPoseUpdater
@@ -22,11 +23,15 @@ def parser():
                         help='Controller to be used.')
     parser.add_argument('--odometry', action='store_true',
                         help='Use odometry to calculate the robot pose.')
-    parser.add_argument('--kalman', action='store_true',
-                        help='Use Kalman filter to calculate the robot pose.')
+    parser.add_argument('--kalman', action='store', choices=[1, 2, 3], type=int,
+                        help='Use Kalman filter to calculate the robot pose. '
+                             'The argument should determine how many bases should be used.')
     parser.add_argument('--plot-odometry-vs-gt', action='store_true',
                         help='Plot odometry vs ground-truth. Please also set --odometry.')
     parser.add_argument('-p', '--port', type=int, help='V-REP remote API port.', default=25000)
+    parser.add_argument('--server', action='store_true',
+                        help='Start a HTTP Server. '
+                             'It will serve the robot estimated pose on the URL: http://localhost:8090/pose')
     parser.add_argument('-v', '--verbose', help='increase output verbosity',
                         action='store_true')
     return parser
@@ -61,7 +66,8 @@ def main():
     if args.kalman:
         poseUpdater = KalmanFilterPoseUpdater(OdometryPoseUpdater())
 
-    monitor = RobotMonitor(robot, poseUpdater, controller, stopEvent, 200)
+    baseDetector = BaseDetector(robot, args.kalman)
+    monitor = RobotMonitor(robot, poseUpdater, controller, baseDetector, stopEvent, 200)
     if args.kalman:
         monitor.subscribeBaseDetection(poseUpdater)
 
@@ -74,7 +80,9 @@ def main():
 
     monitor.start()
     plotThread.start()
-    server.start()
+
+    if args.server:
+        server.start()
 
     try:
         while monitor.is_alive():

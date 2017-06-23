@@ -101,7 +101,6 @@ class KalmanFilterPoseUpdater(IPoseUpdater, IBaseDetectionListener):
         self.odometryUpdater = odometryUpdater
         self.lastPose = Pose()
         self.start = True
-        self.firstStart = True
         self.lastDetectedBases = None
         self.lastCovariance = matrix([[0, 0, 0],
                                       [0, 0, 0],
@@ -120,8 +119,7 @@ class KalmanFilterPoseUpdater(IPoseUpdater, IBaseDetectionListener):
         if self.start:
             self.lastPose = robot.gtPose
             logging.debug("Start pose: {}".format(robot.gtPose))
-            self.start = self.firstStart or self.lastPose.isZero() or bases is None or (bases[0].localY == 0 and bases[0].localX == 0)
-            self.firstStart = self.lastPose.isZero() or self.odometryUpdater.vR == 0 or bases is None or (bases[0].localY == 0 and bases[0].localX == 0)
+            self.start = self.lastPose.isZero() or bases is None or (bases[0].localY == 0 and bases[0].localX == 0)
             return self.lastPose
 
         logging.debug("before kalman: pose {}, gt{}".format(pose, robot.gtPose))
@@ -136,7 +134,6 @@ class KalmanFilterPoseUpdater(IPoseUpdater, IBaseDetectionListener):
         # Update step
         bases = self.lastDetectedBases
         ht = self._htMatrix(bases, pose.x, pose.y)
-        logging.debug("ht: {}".format(ht))
         qt = self._qtMatrix(len(bases))
         m = inv(((ht * predictCov) * transpose(ht)) + qt)
         kt = (predictCov * transpose(ht)) * m
@@ -153,7 +150,7 @@ class KalmanFilterPoseUpdater(IPoseUpdater, IBaseDetectionListener):
 
         addPose = kt * inova
 
-        logging.debug("addPose: {}".format(addPose))
+        logging.debug("deltaPose: {}".format(addPose))
 
         logging.debug(float(addPose[0][0]))
         self.lastPose = Pose(pose.x + addPose[0, 0], pose.y + addPose[1, 0],

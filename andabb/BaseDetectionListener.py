@@ -1,4 +1,5 @@
 import abc
+import logging
 from math import atan2
 from math import sqrt
 from typing import List
@@ -70,7 +71,7 @@ class BaseDetector:
         leftDist = self.robot.sim.getDistance(realLandmark.name + self.leftReceiver)
         rightDist = self.robot.sim.getDistance(realLandmark.name + self.rightReceiver)
         frontDist = self.robot.sim.getDistance(realLandmark.name + self.frontReceiver)
-        print("{}, {}, {}".format(leftDist, rightDist, frontDist))
+        logging.debug("base distance {}, {}, {}".format(leftDist, rightDist, frontDist))
         if leftDist == 0 or rightDist == 0 or frontDist == 0:
             return DetectedBase(realLandmark, 0, 0)
         return self.calculateBase(realLandmark, leftDist, rightDist, frontDist)

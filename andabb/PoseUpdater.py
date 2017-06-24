@@ -125,8 +125,8 @@ class KalmanFilterPoseUpdater(IPoseUpdater, IBaseDetectionListener):
         logging.debug("before kalman: pose {}, gt{}".format(pose, robot.gtPose))
 
         # Prediction step
-        gt = self._gtMatrix(pose.orientation, deltaTheta, deltaSpace)
-        vt = self._vtMatrix(pose.orientation, deltaTheta, deltaSpace)
+        gt = self._gtMatrix(self.lastPose.orientation, deltaTheta, deltaSpace)
+        vt = self._vtMatrix(self.lastPose.orientation, deltaTheta, deltaSpace)
         covDt = self._covarianceDTMatrix(deltaTheta, deltaSpace)
         rt = self._rtMatrix()
         predictCov = ((gt * self.lastCovariance) * transpose(gt)) + ((vt * covDt) * transpose(vt)) + rt

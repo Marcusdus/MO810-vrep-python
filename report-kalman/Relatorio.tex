@@ -178,20 +178,34 @@ A solução do sistema é representa a localização da base utilizando o sistema de 
 
 \subsection{Transformação de coordenadas}
 Para implementação do filtro de  \textbf{KALMAN - [colocar sessão]} é necessário identificar a posição da base no sistema de coordenadas globais. 
-A transformação do sistema de coordenadas locais do robô para o sistema global é dado pela transformação:
-\[
+A transformação do sistema de coordenadas locais do robô para o sistema global é dado pela rotação \((4)\) seguida da translação\((5)\) do ponto\((x,y)\), no qual \(dx\), \(dy\) e \(\alpha\) são dados pela pose do robô. 
+\begin{equation}
+\left[ 
+\begin{array}{ccc} 
+cos(\alpha) & -sin(\alpha) & 0 \\ 
+sin(\alpha) & cos(\alpha) & 0 \\
+0 & 0 & 1 
+\end{array}
+\right] \times \left[\begin{array}{c} x \\ y \\ 1 \end{array}\right]
+\end{equation}
+
+
+\begin{equation}
+\left[ 
 \begin{array}{ccc} 
 1 & 0 & dx \\ 
 0 & 1 & dy \\
 0 & 0 & 1 
 \end{array}
-\]
+\right] \times \left[\begin{array}{c} x \\ y \\ 1 \end{array}\right]
+\end{equation}
+
  
 
 \subsection{Implementação}
 O robô possui três transceptores em seu topo que estão dispostos como mostrado na figura \ref{fig:robot3-base}. A base se encontra nas coordenadas \((0,0)\) do sistema global de referência. A distância entre os tranceptores e a base é calculada utilizando o módulo de cálculo de distâncias provido pelo simulador V-REP. É importante ressaltar que este cálculo de distâncias em uma simulação mais verossímil precisaria ser implementado.
 
-A implementação do cálculo de intersecção das três circunferências é o método \textit{calculatePoint} no módulo \textit{AngleUniverse}. Ele é utilizado pela classe \textit{BaseDetector} para calcular a posição da base dadas as distâncias obtidas dos transceptores. 
+A implementação do cálculo de intersecção das três circunferências é o método \textit{calculatePoint} no módulo \textit{AngleUniverse}. Ele é utilizado pela classe \textit{BaseDetector} para calcular a posição da base dadas as distâncias obtidas dos transceptores. A base é representada pela classe \textit{DetectedBase} que possui o método \textit{getAbsolutePosition} que realiza a transformação das coordenadas locais para as coordenadas globais dada uma determinada pose. 
 
 
 \begin{figure}[ht]

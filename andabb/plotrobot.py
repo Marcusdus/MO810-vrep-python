@@ -100,7 +100,7 @@ def update_line(num, robot: Robot, robotLine, gtLine):
     return robotLine, gtLine,
 
 
-def plotRobot(robot: Robot, invertX, intervalMs=500):
+def plotRobot(robot: Robot, invert, intervalMs=500):
     fig1 = plt.figure()
 
     robotLine, = plt.plot([], [], 'ro', label='Estimated')
@@ -113,8 +113,9 @@ def plotRobot(robot: Robot, invertX, intervalMs=500):
     plt.xlabel('x')
     plt.ylabel('y')
     plt.title('Estimated Pose vs Ground Truth')
-    if invertX:
+    if invert:
         plt.gca().invert_xaxis()
+        plt.gca().invert_yaxis()
 
     leg = plt.legend(bbox_to_anchor=(1.1, 1.05))
     for l in leg.get_lines():

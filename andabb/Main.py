@@ -32,7 +32,7 @@ def parser():
     parser.add_argument('--server', action='store_true',
                         help='Start a HTTP Server. '
                              'It will serve the robot estimated pose on the URL: http://localhost:8090/pose')
-    parser.add_argument('--invert-x', help='Invert plot X axis',
+    parser.add_argument('--invert-axis', help='Invert plot X and Y axis',
                         action='store_true')
     parser.add_argument('-v', '--verbose', help='increase output verbosity',
                         action='store_true')
@@ -76,7 +76,7 @@ def main():
     monitor.subscribeChangePosition(server)
 
     if args.plot_odometry_vs_gt:
-        plotThread = threading.Thread(target=plotRobot, args=(robot, args.invert_x,))
+        plotThread = threading.Thread(target=plotRobot, args=(robot, args.invert_axis,))
     else:
         plotThread = threading.Thread(target=plotRobotAndObjects, args=(monitor,))
 

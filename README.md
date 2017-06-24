@@ -52,7 +52,7 @@ set VREP_LIB_PATH="C:\Program Files (x86)\V-REP3\V-REP_PRO_EDU\programming\remot
 
 Now to execute the robot is simple:
 ```bash 
-# To plot the localization calculated with odomotry and Kalmnan filters.
+# To plot the localization calculated with odomotry and Kalman filters.
 pioneer --kalman 1 --plot-odometry-vs-gt
 # "--kalman 1" means the algorithm will use one base as a landmark.
 # Use the scene p3dx-original-with-script-transceiver-3bases.ttt

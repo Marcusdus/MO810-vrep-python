@@ -69,8 +69,9 @@ O filtro de Kalman provou-se uma técnica eficiente para computar a localização d
 % Modifique as seções de acordo com o seu projeto
 
 \section{Introdução}
-Este projeto se propõe a realizar a localização de um robô diferencial utilizando uma base, odometria e o filtro de Kalman. 
-Este projeto consiste no desenvolvimento de um sistema de controle para o \textit{Pioneer P3-DX} no simulador \textit{V-REP}. A implementação foi realizada em Python 3.5, com a utilização de algumas bibliotecas como o Scikit-fuzzy e Matplotlib. Os ciclos de atualização de leitura do sensores acontecem por padrão a cada 200ms. O código fonte pode ser obtido em https://github.com/luwood/MO810-vrep-python. As instruções de instalação se encontram no README do projeto. 
+Este projeto se propõe a realizar a localização de um robô diferencial utilizando uma base, odometria e o filtro de Kalman. Parte-se do pressuposto que o cálculo de distância com a base é dado. 
+
+Todas as simulações expostas foram realizadas no simulador \textit{V-REP} utilizando o \textit{Pioneer P3-DX}. A implementação foi feita em Python 3.5, com a utilização de algumas bibliotecas como Numpy e Matplotlib. Os ciclos de atualização de leitura do sensores acontecem por padrão a cada 200ms. O código fonte pode ser obtido em https://github.com/luwood/MO810-vrep-python. As instruções de instalação se encontram no README do projeto. 
 
 Este artigo está dividido em três sessões principais:
 
@@ -82,18 +83,13 @@ Este artigo está dividido em três sessões principais:
 
 
 \section{Odometria}
-O cálculo da odometria foi realizado com base na estimativa de velocidade das rodas. A implementação deste componente está na classe \textit{OdometryPoseUpdater}. 
-
-\subsection{Rodas}
+O cálculo da odometria é realizado com base na estimativa de velocidade das rodas.
 Cada roda possui um \textit{encoder} que provê sua posição angular. Através da coleta temporal desta informação é possível determinar sua velocidade utilizando a seguinte fórmula:
  
 \[ V = \frac{\Delta \theta}{\Delta time} R \]
 
 Em que \( \Delta \theta \) representa a diferença angular entre posições do \textit{encoder} durante um intervalo de tempo \(\Delta time\) e \(R\) é o raio da roda. É importante destacar que o cálculo da diferença angular deve levar em conta a orientação do giro e o universo em que os ângulos estão.  
 
-A implementação do cálculo de velocidade da roda encontra-se na classe \textit{Wheel}. A orientação do giro é obtida utilizando a hipótese que a diferença angular deve ser sempre menor do que \( \pi \). 
-
-\subsection{Velocidade do Robô diferencial}
 Dada a velocidade de cada roda, pode-se calcular a velocidade linear e angular do robô através da fórmula:
 
 \[ V = \frac{V_r + V_l}{2}\]
@@ -101,21 +97,15 @@ Dada a velocidade de cada roda, pode-se calcular a velocidade linear e angular d
 
 Em que \(V_r\) é a velocidade da roda direita, \(V_l\) é a roda esquerda, \(D\) é a distância entre as rodas, \(V\) é a velocidade linear e \(\omega\) é a velocidade angular. 
 
-\subsection{Pose}
-A pose do robô é então calculada 
+A pose do robô no momento \(t\) depende da pose anterior, em \(t-1\), e pode ser calculada através das equações:
+
+\[x_t = x_{t-1} + (\Delta s * cos(\theta_{t-1} + \frac{\Delta \theta}{2}) )\]
+\[y_t = y_{t-1} + (\Delta s * sin(\theta_{t-1} + \frac{\Delta \theta}{2}) )\]
+\[\theta = \theta_{t-1} + \Delta \theta\]
 
 
-\begin{lstlisting}[language=python]
-x = lastPose.x + (deltaSpace * cos( \ 
-    addDelta(lastPose.orientation, deltaTheta/2)))
-y = lastPose.y + (deltaSpace * sin( \ 
-    addDelta(lastPose.orientation, deltaTheta/2)))
-theta = addDelta(lastPose.orientation, \
-                 deltaTheta)
-        
-\end{lstlisting}
-
-
+\subsection{Implementação}
+A implementação do cálculo da odomoetria é feita pela classe  \textit{OdometryPoseUpdater}. Para fins práticos a pose inicial do robô é obtida com a leitura do \textit{Ground Truth}. O cálculo da velocidade da roda encontra-se em uma classes distinta chamada \textit{Wheel}.  A orientação do giro é obtida utilizando a hipótese que a diferença angular deve ser sempre menor do que \( \pi \). 
 
 
 \section{Localizando a Base}
@@ -125,7 +115,7 @@ Através da distância de um único ponto, é impossível determinar sua localização 
 
 Com três sensores é possível determinar a posição da base através da resolução de um sistema linear de equações. Na figura \ref{fig:robot3-base} podemos ver que o círculo que parte de cada sensor, se intersecta em um único ponto. 
 
-As equações de cada uma das circunferências pode ser descrita da seguinte forma:
+A equação de cada uma das circunferências pode ser descrita da seguinte forma:
 \begin{equation}
 r_1^2 = (x - x_1)^2 + (y - y_1)^2 
 \end{equation}
@@ -136,7 +126,7 @@ r_2^2 = (x - x_2)^2 + (y - y_2)^2
 r_3^2 = (x - x_3)^2 + (y - y_3)^2 \\
 \end{equation}
 
-Para encontrar o ponto de intersecção entre as três circunferências, precisamos encontrar os valores de \(x\) e \(y\) combinando as três equações quadráticas em um sistema de duas equações lineares. 
+Para encontrar o ponto de intersecção entre as três circunferências, é necessário encontrar os valores de \(x\) e \(y\) combinando as três equações quadráticas em um sistema de duas equações lineares. 
 Subtraindo (2) de (1) e (3) de (1):
 
 \[
@@ -145,10 +135,10 @@ Subtraindo (2) de (1) e (3) de (1):
 2x(x_3 - x_1)^2 + 2y(y_3 - y_1)^2 + (x_1^2 - x_3^2) + (y_1^2 - y_3^2) - (r_1^2 - r_3^2) = 0
 \]
 
-A solução do sistema é representa a localização da base utilizando o sistema de coordenadas local do robô. 
+A solução do sistema é a localização da base considerando o sistema de coordenadas local do robô. 
 
 \subsection{Transformação de coordenadas}
-Para implementação do filtro de  \textbf{KALMAN - [colocar sessão]} é necessário identificar a posição da base no sistema de coordenadas globais. 
+Para implementação do filtro de Kalman utilizado neste trabalho é necessário identificar a posição da base no sistema de coordenadas globais. 
 A transformação do sistema de coordenadas locais do robô para o sistema global é dado pela rotação \((4)\) seguida da translação\((5)\) do ponto\((x,y)\), no qual \(dx\), \(dy\) e \(\alpha\) são dados pela pose do robô. 
 \begin{equation}
 \left[ 
@@ -199,14 +189,14 @@ A implementação do cálculo de intersecção das três circunferências é o método \t
 
 O filtro de Kalman (KF) é uma implementação de filtros \textit{Bayesianos} que realiza remoção de ruídos e predição de valores num sistema de estados contínuos. O interessante desta técnica é sua capacidade de combinar diferentes estimativas e suas respectivas covariâncias, computando uma distribuição Gaussiana baseada apenas em estados anteriores.
 
-Por definição, o KF trabalha com probabilidades lineares. Sua versão extendida (EFK) trabalha com a hipótese de as funções que modelam as probabilidades não são lineares. Como um robô tipicamente pode realizar uma trajetória circular, o modelo mais indicado é o EKF. \ref{alg:ekf}.
+Por definição, o KF trabalha com probabilidades lineares. Sua versão extendida (EFK) trabalha com a hipótese de as funções que modelam as probabilidades não são lineares. Como um robô tipicamente pode realizar uma trajetória circular, o modelo mais indicado é o EKF.
 
 
 \begin{algorithm}
 \caption{Extended Kalman filter \(\bar{\mu_t}, \mu_{t-1}, \Sigma_{t-1}, \Sigma_{\Delta t}, z_t\)}
  \label{alg:ekf}
 \begin{algorithmic} 
-\STATE \(\bar{\Sigma}_{t} = G_t\Sigma_{t-1}G_t^T + V_t \Sigma_{\Delta t} V_t^T + R_t \)
+\STATE \(\bar{\Sigma}_{t} = G_t\Sigma_{t-1}G_t^T + R_t \)
 \STATE \(K_t = \bar{\Sigma}_{t} H_t^T (H_t\bar{\Sigma}_{t}H_t^T + Q_t)^-1  \)
 \STATE \(\mu_t = \bar{\mu}_t + K_t(\bar{z}_t - z_t )\)
 \STATE \(\Sigma_t = (I - K_t H_t)\bar{\Sigma}_{t} \)
@@ -214,15 +204,18 @@ Por definição, o KF trabalha com probabilidades lineares. Sua versão extendida (
 \end{algorithmic}
 \end{algorithm}
 
-O algoritmo do EKF está descrito pela tabela \ref{alg:ekf}, onde \(\bar{\mu_t}\) pode ser entendido como a estimativa do estado no tempo \(t\), \(\mu_{t-1}\) o cálculo do estado no tempo \(t-1\), \(\Sigma_{t-1}\) a covariância calculada em \(t-1\) e \(z_t\) são as observações no tempo t. 
+A lógica do EKF está descrita pelo algoritmo \ref{alg:ekf}, onde \(\bar{\mu_t}\) pode ser entendido como a estimativa do estado no tempo \(t\), \(\mu_{t-1}\) o cálculo do estado no tempo \(t-1\), \(\Sigma_{t-1}\) a covariância calculada em \(t-1\) e \(z_t\) são as observações no tempo t. 
 
 \subsection{Localização com EKF}
 
-Esta sessão é dedica a explicar como o filtro de Kalman Extendido pode ser utilizado para realizar a localização do robô com o auxílio da detecção de \textit{landmarks}. Os detalhes das fórmulas utilizadas não serão abordados, mas podem ser vistos na tabela 7.2 do livro \textit{Probabilistic Robotics}\cite{thrun2005probabilistic}.
+Esta sessão é dedicada a explicar como o filtro de Kalman Extendido pode ser utilizado para realizar a localização do robô com o auxílio da detecção de \textit{landmarks}. As fórmulas utilizadas foram primariamente retiradas da  tabela 7.2 do livro \textit{Probabilistic Robotics}\cite{thrun2005probabilistic}. Como suporte também foi utilizada uma apresentação realizada em 2014\cite{pinheiro2014}.
 
-Tratando-se de localização o estado que pretende-se prever é a pose do robô, representado, então, por \(\mu\) no algoritmo \ref{alg:ekf}. A estimativa de \(\mu_t\), \(\bar{\mu}_t\), é dada pelo cálculo da odometria. 
+O objetivo da utilização do filtro é a melhoria na cálculo da pose do robô.  Portanto, na primeira linha do algoritmo \ref{alg:ekf},  \(\mu_t\) representa a pose do robô no instante de tempo \(t\) . A estimativa de \(\mu_t\), \(\bar{\mu}_t\), é dada pelo computação da odometria. 
 
-A primeira linha do algoritmo pode ser entendida como o modelo de erro da odometria:
+A primeira linha do algoritmo pode ser entendida como o modelo de erro da odometria. Portanto, foi acrescentado mais um fator em sua composição. Sua forma final é dada pela equação:
+\[\bar{\Sigma}_{t} = G_t\Sigma_{t-1}G_t^T + V_t \Sigma_{\Delta t} V_t^T + R_t \]
+
+Os valores de \(G_t\), \(Sigma_{\Delta t}\), \(V_t\) e \(R_t\) estão descritos abaixo:
 
 \[\beta_t = \theta_{t-1} + \frac{\Delta \theta_t}{2} \]
 \[ G_t = 
@@ -265,7 +258,7 @@ K_s |\Delta s_t| & 0\\
 \]
 
 A segunda linha do algoritmo calcula a matriz \(K_t\), conhecida como o ganho de Kalman. Essa matriz pode ser entendida como o mecanismo que indica se deve-se confiar no valor estimado (odometria) ou na observação dos sensores (\(z\)).
-A matriz \(H_t\). No cenário proposto, os sensores são capazes de estimar a posição de \textit{landmarks} cuja posição real é conhecida anteriormente. A matriz \(Q\) representa a distribuição dos erros das observações. Portanto, para cada \textit{landmark} que encontra-se em \((L_x, L_y)\), as matrizes \(H\) e \(Q\) recebem duas linhas:
+ No cenário proposto, os sensores são capazes de estimar a posição de \textit{landmarks} cuja posição real é conhecida anteriormente. A matriz \(Q\) representa a distribuição dos erros das observações. A matriz \(H_t\) é a matriz Jacobiana do cálculo de \(z\).  Portanto, para cada \textit{landmark} que encontra-se em \((L_x, L_y)\), as matrizes \(H\) e \(Q\) recebem duas linhas:
 \[ x_t = \bar{\mu}_t[x], y_t = \bar{\mu}_t[y]\]
 \[q = (L_x - x_t)^2 + (L_y - y_t)^2\]
 \[
@@ -304,7 +297,7 @@ Onde \(L\) representa a posição real do \textit{landmark} e \(l\) a posição calc
 \[p_{bearing} = arctan2((p_y - y_t ), (p_x - x_t)) - \theta_t\]
 
 \subsection{Implementação}
-A implementação do filtro extendido de Kalman encontra-se na classe \textit{KalmanFilterPoseUpdater}. É importante notar que este componente utiliza o cálculo da odometria e sempre realiza a atualização do último valor calculada pela mesma. 
+A implementação do filtro extendido de Kalman encontra-se na classe \textit{KalmanFilterPoseUpdater}. É importante notar que este componente utiliza o cálculo da odometria e sempre realiza a atualização do último valor calculado pela mesma. 
 
 Os valores das constantes utilizadas estão descritos na tabela \ref{tab:cvalues}
 
@@ -365,7 +358,7 @@ Real & Odometria & Erro \\ \hline \hline
 Pode-se concluir que a odometria é um método de estimativa extremamente suscetível a erros acumulados. Para tornar este método viável seria necessário necessário realizar correções no cálculo da orientação. A utilização de uma bússola, por exemplo, poderia auxiliar nesta computação. 
 
 \subsection{Filtro de Kalman Extendido}
-A figura \ref{fig:efk1} mostra a comparação entre a posição estimada e a posição real do robô quando apenas uma base é utilizada. Pode-se observar a evidente melhoria no trajeto calculado em comparação com a figura \ref{fig:fig0}. Porém também fica evidente que em alguns pontos o erro na predição da rota é maior do que em outros. 
+A figura \ref{fig:efk1} mostra a comparação entre a posição estimada pela odometria e o filtro de Kalman e a posição real do robô quando apenas uma base é utilizada. Pode-se observar a evidente melhoria no trajeto calculado em comparação com a figura \ref{fig:fig0} (cenário que utiliza apenas a odometria). Porém também fica evidente que em alguns pontos o erro na predição da rota é maior do que em outros. 
 
 \begin{figure}[ht]
 \centering
